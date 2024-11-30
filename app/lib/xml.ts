@@ -1,14 +1,21 @@
 import { DomHandler, Parser, ElementType } from 'htmlparser2'
 import domSerializer from 'dom-serializer'
 
-export function extractTags<T extends string>({
+
+
+export function extractTagsArrays<T extends string>({
     xml,
     tags,
 }: {
     xml: string
     tags: T[]
-}): Record<T, string> & { others: string[] } {
-    const result = { others: [] } as Record<T, string> & { others: string[] }
+}): Record<T, string[]> & { others: string[] } {
+    const result = { others: [] } as Record<T, string[]> & { others: string[] }
+
+    // Initialize arrays for each tag
+    tags.forEach((tag) => {
+        result[tag as any] = [] as string[]
+    })
 
     try {
         const handler = new DomHandler((error, dom) => {
@@ -19,17 +26,13 @@ export function extractTags<T extends string>({
                     nodes.forEach((node) => {
                         if (node.type === ElementType.Tag) {
                             if (tags.includes(node.name as T)) {
-                                // if (node.name === 'script') {
-                                //     console.log('Script tag children:', node.children)
-                                // }
-                                result[node.name as any] = domSerializer(
-                                    node.children,
-                                    {
+                                result[node.name].push(
+                                    domSerializer(node.children, {
                                         xmlMode: true,
                                         decodeEntities: false,
                                         encodeEntities: false,
-                                    },
-                                ).trim()
+                                    }).trim(),
+                                )
                             }
                             if (node.children) {
                                 findTags(node.children)
