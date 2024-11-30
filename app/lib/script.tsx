@@ -22,12 +22,33 @@ Law text:
 ${lawText}
 </law_text>
 
-First, explain how you'll structure each 60-second video using this simplified hero's journey framework:
+First, let's think through the key aspects step by step:
+
+1. Core Legal Concepts:
+- What are the main legal principles being addressed?
+- Which specific regulations need to be explained?
+- What are the key compliance requirements?
+
+2. Real-World Impact:
+- How does this law affect everyday situations?
+- What common misconceptions exist?
+- What are the consequences of non-compliance?
+
+3. Practical Application:
+- What specific actions should people take?
+- What are the best practices for compliance?
+- What tools or resources are available?
+
+4. Educational Goals:
+- What are the 3 most important takeaways?
+- How can we make complex concepts relatable?
+- What behavioral changes are we promoting?
+
+Now, structure each 60-second video using this simplified hero's journey framework:
 1. The Call (10s): Present a common situation where this law becomes relevant
 2. The Threshold (10s): Show what happens when someone encounters this legal requirement
 3. The Journey (15s): Walk through understanding and adapting to the law
 4. The Boons (15s): Highlight the key learnings and practical tips
-5. The Impact (10s): Demonstrate how following this law creates positive outcomes
 
 Then, provide exactly ${numItems} sets of responses in XML format, each containing:
 <video_script>Clear, direct script that follows the hero framework and fits within 60 seconds. Focus on education and practical application.</video_script>

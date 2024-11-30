@@ -59,10 +59,10 @@ export async function* generateVideosHandler(
         })
         // Upload the combined video
         const fileContent = await fs.promises.readFile(res.outputPath)
-        const uploadUrl = await uploadFile(
-            fileContent,
-            `combined-${Date.now()}.mp4`,
-        )
+        const uploadUrl = await uploadFile({
+            content: fileContent,
+            filename: `combined-${Date.now()}.mp4`,
+        })
         if (!uploadUrl) {
             throw new Error('Failed to upload combined video')
         }

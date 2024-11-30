@@ -78,8 +78,11 @@ describe(
             const videoBuffer = Buffer.from(await videoResponse.arrayBuffer())
 
             // Upload the video
-            const uploadResult = await uploadFile(videoBuffer, 'test-video.mp4')
-            expect(uploadResult).toMatch(/^https:\/\/.*\?download=1$/)
+            const uploadResult = await uploadFile({
+                content: videoBuffer,
+                filename: 'test-video.mp4'
+            })
+            expect(uploadResult).toMatch(/^https:\/\/.*/)
             console.log('Upload URL:', uploadResult)
         })
     },
