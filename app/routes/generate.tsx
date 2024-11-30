@@ -4,12 +4,26 @@ import { useEffect, useState } from 'react'
 import { client } from '~/lib/client'
 import { VideoItem } from '~/lib/llm'
 
+function PlayButton() {
+    return (
+        <div className="absolute inset-0 flex items-center justify-center">
+            <svg 
+                className="w-20 h-20 text-white" 
+                fill="currentColor" 
+                viewBox="0 0 24 24"
+            >
+                <path d="M8 5v14l11-7z"/>
+            </svg>
+        </div>
+    )
+}
 
 let testMode = true
 
 export default function Generate() {
     const [searchParams] = useSearchParams()
     const [videos, setVideos] = useState<VideoItem[]>([])
+    const [playingVideos, setPlayingVideos] = useState<{[key: number]: boolean}>({})
     const description = searchParams.get('description') || ''
     const avatar = searchParams.get('avatar') || ''
     const pdfText = searchParams.get('pdfText') || ''
@@ -42,55 +56,78 @@ export default function Generate() {
         fetchVideos()
     }, [])
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
             {videos.length === 0 ? (
                 // Show loading skeletons when no videos yet
                 <>
                     {[1, 2, 3].map((i) => (
                         <div 
                             key={i}
-                            className="animate-pulse bg-gray-200 rounded-lg p-4 flex flex-col gap-4"
+                            className="animate-pulse relative aspect-[9/16] rounded-xl overflow-hidden"
                         >
-                            <div className="bg-gray-300 rounded-md w-full aspect-[9/16]"></div>
-                            <div className="bg-gray-300 h-4 w-3/4 rounded"></div>
-                            <div className="bg-gray-300 h-4 w-1/2 rounded"></div>
+                            <div className="absolute inset-0 bg-gray-300"></div>
+                            {/* <PlayButton /> */}
+                            <div className="absolute bottom-4 left-4 right-4 bg-gray-200 rounded-xl p-4 space-y-3">
+                                <div className="bg-gray-300 h-4 w-3/4 rounded"></div>
+                                <div className="bg-gray-300 h-4 w-1/2 rounded"></div>
+                            </div>
                         </div>
                     ))}
                 </>
             ) : (
                 // Show actual videos
                 videos.map((video, i) => (
-                    <div key={i} className="border rounded-lg p-4 flex flex-col gap-4">
+                    <div key={i} className="relative aspect-[9/16] rounded-xl overflow-hidden">
                         {video.url ? (
-                            <video 
-                                src={video.url}
-                                controls
-                                className="w-full aspect-[9/16] object-cover rounded-md"
-                            />
+                            <>
+                                <video 
+                                    src={video.url}
+                                    controls
+                                    className="absolute inset-0 w-full h-full object-cover"
+                                    onPlay={() => setPlayingVideos(prev => ({...prev, [i]: true}))}
+                                    onPause={() => setPlayingVideos(prev => ({...prev, [i]: false}))}
+                                    onEnded={() => setPlayingVideos(prev => ({...prev, [i]: false}))}
+                                />
+                                {!playingVideos[i] && <PlayButton />}
+                            </>
                         ) :  (
-                            <div className="w-full aspect-[9/16] bg-gray-100 rounded-md flex items-center justify-center">
+                            <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
                                 Processing video...
                             </div>
                         )}
                         
-                        <h3 className="font-medium truncate">{video.title}</h3>
-                        
-                        {video.status && (
-                            <p className="text-sm text-gray-500">
-                                Status: {video.status || 'Processing...'}
-                            </p>
-                        )}
-                        
-                        {video.keywords && video.keywords.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                                {video.keywords.slice(0,3).map((keyword, j) => (
-                                    <span 
-                                        key={j}
-                                        className="text-xs bg-gray-100 px-2 py-1 rounded"
-                                    >
-                                        {keyword}
-                                    </span>
-                                ))}
+                        {!playingVideos[i] && (
+                            <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-xl p-4 space-y-3 shadow-lg">
+                                <h3 className="font-medium truncate">{video.title}</h3>
+                                
+                                {video.status && (
+                                    <p className="text-sm text-gray-500">
+                                        Status: {video.status || 'Processing...'}
+                                    </p>
+                                )}
+                                
+                                {video.keywords && video.keywords.length > 0 && (
+                                    <div className="flex flex-wrap gap-2">
+                                        {video.keywords.map((keyword, j) => {
+                                            const colors = [
+                                                'bg-blue-100 text-blue-800',
+                                                'bg-green-100 text-green-800',
+                                                'bg-purple-100 text-purple-800',
+                                                'bg-yellow-100 text-yellow-800',
+                                                'bg-pink-100 text-pink-800'
+                                            ];
+                                            const colorIndex = keyword.length % colors.length;
+                                            return (
+                                                <span 
+                                                    key={j}
+                                                    className={`text-xs px-2 py-1 rounded-full ${colors[colorIndex]}`}
+                                                >
+                                                    {keyword}
+                                                </span>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
@@ -105,7 +142,7 @@ export const testVideos: VideoItem[] = [
         url: 'https://videos.pexels.com/video-files/4550475/4550475-hd_720_1280_50fps.mp4',
         title: 'City Traffic Time Lapse',
         status: 'Complete',
-        keywords: ['transport', 'city', 'traffic', 'cars'],
+        keywords: ['transport', 'transport', 'transport', 'city', 'city', 'city', 'traffic', 'traffic', 'traffic', 'cars', 'cars', 'cars'],
         script: 'A timelapse of busy city traffic showing cars moving through intersections'
     },
     {
