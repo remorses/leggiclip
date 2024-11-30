@@ -1,5 +1,28 @@
 import { describe, it, expect } from 'vitest'
-import { generateTikTokScripts } from './llm'
+import { defaultLawText, generateTikTokScripts, generateVideosHandler } from './llm'
+
+describe('generateVideosHandler', () => {
+    it(
+        'generates videos from text',
+        async () => {
+            const generator = await generateVideosHandler({
+                pdfText: defaultLawText,
+                description: 'Speed limit laws and safety',
+                avatar: 'male',
+                numItems: 1,
+            })
+
+            for await (const result of generator) {
+                expect(Array.isArray(result.videos)).toBe(true)
+                console.log(
+                    'Current videos state:',
+                    JSON.stringify(result.videos, null, 2),
+                )
+            }
+        },
+        1000 * 60 * 5,
+    ) // 5 minute timeout
+})
 
 describe(
     'generateTikTokScript',

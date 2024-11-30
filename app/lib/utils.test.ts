@@ -3,8 +3,11 @@ import {
     combineVideos,
     getUnsplashVideo,
     getVideosForKeywords,
-    uploadImage,
+    uploadFile,
 } from './utils'
+import { generateVideosHandler } from '~/lib/llm'
+
+
 
 describe('getVideosForKeywords and combineVideos', () => {
     it(
@@ -46,7 +49,7 @@ describe(
             const videoBuffer = Buffer.from(await videoResponse.arrayBuffer())
 
             // Upload the video
-            const uploadResult = await uploadImage(
+            const uploadResult = await uploadFile(
                 videoBuffer,
                 'test-video.mp4',
             )

@@ -118,13 +118,13 @@ export async function combineVideos({
                 return `file '${path}'\ninpoint 0\noutpoint ${segmentDurationSeconds}`
             })
             .join('\n')
-        const listPath = `list-${Date.now()}.txt`
+        const listPath = `${outputDir}/list-${Date.now()}.txt`
         fs.writeFileSync(listPath, fileList)
 
         // Use concat demuxer with segment duration limits and reencode
-        const command = `ffmpeg -f concat -safe 0 -i "${listPath}" -c:v libx264 -c:a aac "${outputPath}"`
+        const command = `ffmpeg -f concat -safe 0 -i "${listPath}" -c:v libx264 -preset ultrafast -c:a aac "${outputPath}"`
 
-        const ffmpeg = spawn(command, { shell: true, stdio: 'inherit' })
+        const ffmpeg = spawn(command, { shell: true,  stdio: 'inherit' })
 
         ffmpeg.on('close', (code) => {
             // Clean up the temporary file list
@@ -211,7 +211,7 @@ export function isTruthy<T>(value: T | null | undefined | false): value is T {
 
 
 // bashupload.com is a free service to upload files temporarily, they are deleted after 3 days
-export async function uploadImage(
+export async function uploadFile(
     fileContent: ArrayBuffer,
     fileName = 'file.pm4',
 ) {
