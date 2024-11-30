@@ -39,12 +39,15 @@ export const app = new Spiceflow({ basePath: '/api' }).post(
 
         const numVideos = 1
         const scriptsStream = await generateTikTokScripts({
-            lawText: body.pdfText,
+            lawText: body.pdfText || defaultLawText,
             description: body.description,
             numItems: numVideos,
         })
 
-        type Item = ArrayItem<ExtractGeneratorType<typeof scriptsStream>> & {
+        type Item = {
+            keywords: string[]
+            title: string
+            script: string
             bgUrl?: string
             videoId?: string
             status?: string
@@ -246,3 +249,29 @@ export const loader = async ({ request }: { request: Request }) => {
 type ExtractGeneratorType<T> = T extends AsyncGenerator<infer U> ? U : never
 
 type ArrayItem<T> = T extends (infer U)[] ? U : never
+
+
+const defaultLawText = `Articolo 1 - Principi generali del Codice della Strada
+1. La sicurezza delle persone, nella circolazione stradale, è un obiettivo primario dello Stato.
+2. La circolazione dei veicoli, dei pedoni e degli animali sulle strade è regolata dalle norme del presente codice.
+
+Articolo 2 - Definizione e classificazione delle strade
+1. Ai fini dell'applicazione delle norme del presente codice si definisce "strada" l'area ad uso pubblico destinata alla circolazione dei pedoni, dei veicoli e degli animali.
+2. Le strade sono classificate, riguardo alle loro caratteristiche costruttive, tecniche e funzionali, nei seguenti tipi:
+A - Autostrade
+B - Strade extraurbane principali
+C - Strade extraurbane secondarie
+D - Strade urbane di scorrimento
+E - Strade urbane di quartiere
+F - Strade locali
+
+Articolo 3 - Regole generali di comportamento
+1. Gli utenti della strada devono comportarsi in modo da non costituire pericolo o intralcio per la circolazione.
+2. I conducenti devono essere in grado di compiere tutte le manovre necessarie in condizioni di sicurezza.
+
+Articolo 4 - Limiti di velocità
+1. Ai fini della sicurezza della circolazione e della tutela della vita umana, la velocità massima non può superare i 130 km/h per le autostrade.
+2. Il limite di velocità massimo da non superare è di:
+- 110 km/h per le strade extraurbane principali
+- 90 km/h per le strade extraurbane secondarie
+- 50 km/h per le strade urbane`
