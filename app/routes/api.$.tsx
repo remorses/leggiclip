@@ -16,6 +16,9 @@ export const app = new Spiceflow({ basePath: '/api' }).post(
     },
 )
 
+
+export type App = typeof app
+
 export const action = async ({ request }: { request: Request }) => {
     return app.handle(request)
 }
