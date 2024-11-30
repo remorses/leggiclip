@@ -98,14 +98,20 @@ export const action: ActionFunction = async ({ request }) => {
         const data = await response.json()
         console.log(data)
         return json({
+            ...data?.data,
             id: data.video_id,
             url: data.video_url,
         })
     } catch (error) {
         console.error('Generation error:', error)
         return json(
-            { error: error instanceof Error ? error.message : 'An unknown error occurred' },
-            { status: 500 }
+            {
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : 'An unknown error occurred',
+            },
+            { status: 500 },
         )
     }
 }

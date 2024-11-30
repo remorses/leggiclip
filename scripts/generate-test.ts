@@ -6,7 +6,7 @@ const generateVideo = async () => {
             throw new Error('HEYGEN_API_KEY environment variable is not set')
         }
 
-        const checkTemplates = true
+        const checkTemplates = false
 
         if (checkTemplates) {
             // Fetch available templates
@@ -41,7 +41,7 @@ const generateVideo = async () => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                script: 'Ciao! come va amici?',
+                script: 'Ciao a tutti! Oggi parliamo delle nuove regole del codice della strada in Italia. Ci sono importanti cambiamenti che riguardano la sicurezza stradale, incluse sanzioni più severe per chi usa il cellulare alla guida e nuove norme per i monopattini elettrici. È fondamentale conoscere queste modifiche per guidare in sicurezza e evitare multe salate. Ricordate sempre: la prudenza è la priorità numero uno sulla strada.',
                 title: 'Test Video',
             }),
         })

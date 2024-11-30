@@ -7,7 +7,7 @@ const checkVideoStatus = async () => {
         }
 
         // Test video ID
-        const testVideoId = "test-video-123"; 
+        const testVideoId = "348c8aae8b62430f88e3e97643206b2a"; 
 
         const response = await fetch(`http://localhost:5173/api/video?id=${testVideoId}`, {
             headers: {
