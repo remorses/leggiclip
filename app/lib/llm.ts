@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { createOpenAI } from '@ai-sdk/openai'
 import { extractTagsArrays } from './xml'
 
-import { env } from '~/lib/env'
+import { env, templateId } from '~/lib/env'
 import {
     combineVideos,
     getVideosForKeywords,
@@ -71,7 +71,7 @@ export async function* generateVideosHandler(
     }
 
     // Generate all videos in parallel
-    return
+    // return
 
     for (const item of videos) {
         const video = await generateVideo({
@@ -137,6 +137,8 @@ async function getVideoStatus(videoId: string) {
     }
 }
 
+
+
 async function generateVideo({
     title,
     script,
@@ -148,7 +150,7 @@ async function generateVideo({
     // keywords?: string[]
     bgUrl?: string
 }) {
-    const template_id = '3d88fbeeccd84c1193d4009bf11eb5f1'
+    
     const variables: Variables = {
         title: {
             name: 'title',
@@ -175,7 +177,7 @@ async function generateVideo({
     }
 
     const response = await fetch(
-        `https://api.heygen.com/v2/template/${template_id}/generate`,
+        `https://api.heygen.com/v2/template/${templateId}/generate`,
         {
             method: 'POST',
             headers: {
@@ -184,7 +186,7 @@ async function generateVideo({
             },
             body: JSON.stringify({
                 caption: true,
-                template_id,
+                template_id: templateId,
                 title: title || 'New Video Title',
                 variables,
             }),
@@ -205,6 +207,8 @@ async function generateVideo({
     }
     // return data
 }
+
+
 
 type ExtractGeneratorType<T> = T extends AsyncGenerator<infer U> ? U : never
 

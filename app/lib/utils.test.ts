@@ -1,11 +1,25 @@
 import { describe, it, expect } from 'vitest'
 import {
     combineVideos,
+    getTemplateInfo,
     getUnsplashVideo,
     getVideosForKeywords,
     uploadFile,
 } from './utils'
 import { generateVideosHandler } from '~/lib/llm'
+import { templateId } from '~/lib/env'
+
+
+describe('getTemplateInfo', () => {
+    it('gets template info', async () => {
+
+        const result = await getTemplateInfo(templateId)
+        expect(result).toBeTruthy()
+        console.log('Template info:', JSON.stringify(result, null, 2))
+        // expect(result.template_id).toBe(templateId)
+    })
+})
+
 
 describe('getVideosForKeywords and combineVideos', () => {
     it(

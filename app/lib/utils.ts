@@ -271,7 +271,7 @@ export async function uploadFile(
     fileName = 'file.pm4',
 ) {
     console.time('uploadImage')
-    console.log('Uploading file to bashupload.com:', fileName)
+    console.log('Uploading file to https://bashupload.com:', fileName)
     try {
         const formData = new FormData()
         formData.append('file', new Blob([fileContent]), fileName)
@@ -308,4 +308,32 @@ export async function* fakeStreaming(text: string) {
 
 export function sleep(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+
+export async function getTemplateInfo(templateId: string) {
+    try {
+        const response = await fetch(
+            `https://api.heygen.com/v2/template/${templateId}`,
+            {
+                headers: {
+                    accept: 'application/json',
+                    'X-Api-Key': env.HEYGEN_API_KEY || '',
+                },
+            },
+        )
+
+        if (!response.ok) {
+            const text = await response.text()
+            throw new Error(
+                `Template info request failed: ${response.statusText} - ${text}`,
+            )
+        }
+
+        const data = await response.json()
+        return data.data
+    } catch (error) {
+        console.error('Error getting template info:', error)
+        throw error
+    }
 }
