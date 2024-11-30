@@ -5,3 +5,5 @@
 build
 node_modules
 *.tsbuildinfo
+downloaded-videos
+output-videos

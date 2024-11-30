@@ -1,3 +1,6 @@
+import { spawn } from 'child_process'
+import fs from 'fs'
+
 import path from 'path'
 import { env } from '~/lib/env'
 
@@ -95,8 +98,118 @@ export async function getUnsplashVideo(
     }
 }
 
+export async function combineVideos({
+    videoPaths,
+    segmentDurationSeconds = 3,
+}: {
+    videoPaths: string[]
+    segmentDurationSeconds?: number
+}): Promise<{ outputPath: string }> {
+    return new Promise((resolve, reject) => {
+        const outputDir = 'output-videos'
+        fs.mkdirSync(outputDir, { recursive: true })
+        const outputPath = `${outputDir}/output-${Date.now()}.mp4`
+
+        // Create a temporary file list
+        const fileList = videoPaths.map(path => `file '${path}'`).join('\n')
+        const listPath = `list-${Date.now()}.txt`
+        fs.writeFileSync(listPath, fileList)
+
+        // Use concat demuxer which is more reliable for concatenating files
+        const command = `ffmpeg -f concat -safe 0 -i "${listPath}" -c copy "${outputPath}"`
+
+        const ffmpeg = spawn(command, { shell: true, stdio: 'inherit' })
+
+        ffmpeg.on('close', (code) => {
+            // Clean up the temporary file list
+            fs.unlinkSync(listPath)
+            
+            if (code === 0) {
+                resolve({ outputPath })
+            } else {
+                reject(new Error(`ffmpeg process exited with code ${code}`))
+            }
+        })
+
+        ffmpeg.on('error', (error) => {
+            // Clean up the temporary file list on error too
+            fs.unlinkSync(listPath)
+            reject(error)
+        })
+    })
+}
+
+export async function getVideosForKeywords({
+    keywords,
+}: {
+    keywords: string[]
+}): Promise<{
+    videos: Array<{
+        keyword: string
+        filePath: string | null
+    }>
+}> {
+    const results = await Promise.all(
+        keywords.map(async (keyword) => {
+            try {
+                // Get video from Pexels
+                const pexelsResult = await getUnsplashVideo(keyword)
+                if (!pexelsResult?.bestResultUrl) {
+                    console.warn(`No video found for keyword: ${keyword}`)
+                    return {
+                        keyword,
+                        filePath: null,
+                    }
+                }
+
+                // Download the video
+                const videoResponse = await fetch(pexelsResult.bestResultUrl)
+                if (!videoResponse.ok) {
+                    console.warn(
+                        `Failed to download video for keyword: ${keyword}`,
+                    )
+                    return {
+                        keyword,
+                        filePath: null,
+                    }
+                }
+
+                // Get video content as buffer
+                const videoBuffer = Buffer.from(
+                    await videoResponse.arrayBuffer(),
+                )
+                // Write video to disk
+                const folderPath = 'downloaded-videos'
+                await fs.promises.mkdir(folderPath, { recursive: true })
+                const filePath = path.join(folderPath, `${keyword}-video.mp4`)
+                await fs.promises.writeFile(filePath, videoBuffer)
+                return {
+                    keyword,
+                    filePath,
+                }
+            } catch (error) {
+                console.error(
+                    `Error processing video for keyword "${keyword}":`,
+                    error,
+                )
+                return {
+                    keyword,
+                    filePath: null,
+                }
+            }
+        }),
+    )
+
+    return {
+        videos: results.filter((result) => result.filePath !== null),
+    }
+}
+
 // bashupload.com is a free service to upload files temporarily, they are deleted after 3 days
-export async function uploadImage(fileContent: ArrayBuffer, fileName = 'file.pm4') {
+export async function uploadImage(
+    fileContent: ArrayBuffer,
+    fileName = 'file.pm4',
+) {
     console.time('uploadImage')
     console.log('Uploading file to bashupload.com:', fileName)
     try {
