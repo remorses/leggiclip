@@ -15,39 +15,43 @@ export async function* generateTikTokScripts({
     description: string
     numItems?: number
 }) {
-    const prompt = `Analyze the law text and generate ${numItems} distinct TikTok video scripts. First, identify the key themes and aspects of: ${description}
+    const prompt = `Analyze the law text and generate ${numItems} concise 60-second educational video scripts about: ${description}
 
 Law text:
 <law_text>
 ${lawText}
 </law_text>
 
-First, explain your reasoning about what distinct aspects of the law each video should cover and why they would make engaging content.
+First, explain how you'll structure each 60-second video using this simplified hero's journey framework:
+1. The Call (10s): Present a common situation where this law becomes relevant
+2. The Threshold (10s): Show what happens when someone encounters this legal requirement
+3. The Journey (15s): Walk through understanding and adapting to the law
+4. The Boons (15s): Highlight the key learnings and practical tips
+5. The Impact (10s): Demonstrate how following this law creates positive outcomes
 
-Then, provide exactly ${numItems} sets of responses in XML format, each set containing these tags in order:
-<video_script>The actual TikTok script with intro and outro. This should be written in a friendly influencer style.</video_script>
-<keywords>Provide at least 10 comma-separated search terms for background videos that match the timeline of your script. Each term will be used to find a video clip that plays during that part of the script. For example, if your script talks about "driving in rain" followed by "school zones", include those exact terms in that order.</keywords>
-<title>An engaging video title</title>
+Then, provide exactly ${numItems} sets of responses in XML format, each containing:
+<video_script>Clear, direct script that follows the hero framework and fits within 60 seconds. Focus on education and practical application.</video_script>
+<keywords>At least 10 comma-separated search terms for background footage that matches the script timeline. Each term will be used to find relevant video clips.</keywords>
+<title>An informative title that captures the key learning</title>
 
-Make each script friendly and use typical influencer style. Include a catchy intro like "Hey TikTok!" and an engaging outro like "Don't forget to follow for more legal tips!"
+Example output for one set:
+<video_script>A driver approaches an unfamiliar road. The speed limit shows 55, but heavy rain is falling.
 
-Do not output markdown, just XML. Separate each set with a newline.
+The law demands more than following posted limits - it requires judgment based on conditions.
 
-Here is an example output for one set:
-<video_script>Hey TikTok! Your favorite legal bestie here with some CRAZY speed limit facts you need to know! 🤯
+Let's master the key factors:
+- Weather reduces visibility and traction
+- Traffic density affects safe spacing
+- Road conditions determine stopping distance
 
-Did you know that speed limits aren't just random numbers? They're actually based on safety studies and road conditions! Mind = blown, right?
+Research proves that adaptive speeds:
+- Cut accident risk by half
+- Save lives in adverse conditions
+- Protect all road users
 
-Let me break it down for you:
-- 25 mph in neighborhoods (protect those kiddos!)
-- 55 mph on regular roads (keep it steady!)
-- And ALWAYS slow down for curves and bad weather (duh!)
-
-The tea is: you can actually get a ticket even if you're going the speed limit... if conditions are dangerous! 😱
-
-Stay safe out there besties! Don't forget to follow for more legal tips that could literally save your life! ✨ #LegalTok #DrivingSafety #RoadRules</video_script>
-<keywords>influencer talking to camera, traffic safety studies chart, residential street with houses, highway traffic flowing, dangerous curve road sign, stormy weather driving, police officer giving ticket, social media follow button</keywords>
-<title>5 Speed Limit Facts That Could Save Your Life! 🚗💨</title>`
+This knowledge transforms us from rule-followers into responsible drivers who make our roads safer for everyone.</video_script>
+<keywords>rainy road view, speed limit sign, wet braking demonstration, traffic flow diagram, road condition analysis, accident prevention chart, visibility comparison, safe following distance, road safety statistics, community impact graphic</keywords>
+<title>Smart Speed Choices: Beyond the Posted Limits</title>`
 
     let items: Array<{
         title: string
@@ -57,7 +61,7 @@ Stay safe out there besties! Don't forget to follow for more legal tips that cou
 
     const stream = streamText({
         model: openai('gpt-4o'),
-        system: 'You are a charismatic TikTok influencer who explains laws in a fun and engaging way.',
+        system: 'You are an educational content creator focused on clear, practical legal explanations within strict time limits.',
         prompt,
     })
     let lastYieldTime = 0
@@ -84,13 +88,10 @@ Stay safe out there besties! Don't forget to follow for more legal tips that cou
         }
 
         // Yield current state of items at most once per second
-
         yield items
         lastYieldTime = now
     }
 
     // Make sure to yield final state
     yield items
-
-    // return items
 }

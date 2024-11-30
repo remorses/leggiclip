@@ -12,6 +12,7 @@ import {
     sleep,
     uploadFile,
 } from '~/lib/utils'
+import { generateTikTokScripts } from '~/lib/script'
 
 
 export const GenerateRequest = z.object({

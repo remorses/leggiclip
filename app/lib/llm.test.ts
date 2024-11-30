@@ -43,13 +43,76 @@ describe(
                 numItems: 2,
                 description: 'Explain speed limit laws in a fun way',
             })
+            let lastData
             for await (const data of result) {
                 console.log('Generated scripts:', data)
                 expect(data).toBeInstanceOf(Array)
-                // expect(data[0]).toHaveProperty('title')
-                // expect(data[0]).toHaveProperty('keywords')
-                // expect(data[0]).toHaveProperty('script')
+                lastData = data
             }
+            expect(lastData).toMatchInlineSnapshot(`
+              [
+                {
+                  "keywords": [
+                    "neighborhood drive",
+                    "speed limit sign",
+                    "pedestrian safety",
+                    "child crossing street",
+                    "cyclist on road",
+                    "community safety",
+                    "responsible driving",
+                    "residential area",
+                    "safe driving tips",
+                    "neighborhood watch",
+                  ],
+                  "script": "Imagine cruising through a quiet neighborhood, feeling the breeze. Suddenly, a speed limit sign reads 25 mph.
+
+              This isn't just a suggestion; it's a legal requirement to keep everyone safe.
+
+              Here's how to adapt:
+              - Business and residential areas have more pedestrians
+              - Lower speeds give you more reaction time
+              - It's about protecting kids, pets, and cyclists
+
+              Key takeaways:
+              - Slower speeds reduce accident severity
+              - They enhance community safety
+              - They ensure you're a responsible driver
+
+              By respecting these limits, you contribute to a safer, more pleasant neighborhood for everyone.",
+                  "title": "Neighborhood Speed Limits: Safety First!",
+                },
+                {
+                  "keywords": [
+                    "highway driving",
+                    "speedometer close-up",
+                    "traffic flow",
+                    "stopping distance demonstration",
+                    "accident prevention",
+                    "highway safety",
+                    "smooth traffic",
+                    "responsible driving",
+                    "road safety tips",
+                    "community impact",
+                  ],
+                  "script": "Picture yourself on a wide-open highway, the speedometer creeping up to 55 mph.
+
+              The law sets this limit for a reason, even when the road seems clear.
+
+              Here's why it matters:
+              - Faster speeds increase stopping distance
+              - They reduce reaction time
+              - They can lead to severe accidents
+
+              Remember these benefits:
+              - Following limits prevents fines and accidents
+              - It ensures smoother traffic flow
+              - It keeps everyone on the road safer
+
+              By sticking to these limits, you help create a safer driving environment for all.",
+                  "title": "Highway Speed Limits: Safety in Motion",
+                },
+              ]
+            `)
         })
     },
     1000 * 100,
