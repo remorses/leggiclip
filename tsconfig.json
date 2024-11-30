@@ -17,6 +17,8 @@
     "paths": {
       "~/*": ["./app/*"]
     },
+    "noImplicitAny": false,
+    "useUnknownInCatchVariables": false,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
