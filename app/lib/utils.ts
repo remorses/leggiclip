@@ -238,3 +238,16 @@ export async function uploadImage(
         return null
     }
 }
+
+
+export async function* fakeStreaming(text: string) {
+    const words = text.split(/\s+/)
+    let output = ''
+    for (const word of words) {
+        output += (output ? ' ' : '') + word
+        yield output
+        await new Promise(resolve => setTimeout(resolve, 80))
+    }
+}
+
+
