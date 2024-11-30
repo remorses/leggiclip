@@ -58,9 +58,7 @@ type PexelsVideoResponse = {
     url: string
     videos: Video[]
 }
-export async function getUnsplashVideo(
-    keyword: string,
-): Promise<(PexelsVideoResponse & { bestResultUrl: string }) | null> {
+export async function getUnsplashVideo(keyword: string) {
     try {
         const response = await fetch(
             `https://api.pexels.com/v1/videos/search?query=${encodeURIComponent(keyword)}&orientation=portrait&per_page=1`,
@@ -79,7 +77,9 @@ export async function getUnsplashVideo(
 
         // Find best quality HD video with good fps
         let bestResultUrl = ''
+        let thumbnailUrl = ''
         if (data.videos?.[0]?.video_files) {
+            thumbnailUrl = data.videos[0].image
             const hdVideos = data.videos[0].video_files.filter(
                 (file) => file.quality === 'hd' && file.fps >= 10,
             )
@@ -90,6 +90,7 @@ export async function getUnsplashVideo(
 
         return {
             ...data,
+            thumbnailUrl,
             bestResultUrl,
         }
     } catch (error) {
@@ -111,10 +112,12 @@ export async function combineVideos({
         const outputPath = `${outputDir}/output-${Date.now()}.mp4`
 
         // Create a temporary file list
-        const fileList = videoPaths.map((path, index) => {
-            // For each input, specify inpoint and outpoint for duration
-            return `file '${path}'\ninpoint 0\noutpoint ${segmentDurationSeconds}`
-        }).join('\n')
+        const fileList = videoPaths
+            .map((path, index) => {
+                // For each input, specify inpoint and outpoint for duration
+                return `file '${path}'\ninpoint 0\noutpoint ${segmentDurationSeconds}`
+            })
+            .join('\n')
         const listPath = `list-${Date.now()}.txt`
         fs.writeFileSync(listPath, fileList)
 
@@ -126,7 +129,7 @@ export async function combineVideos({
         ffmpeg.on('close', (code) => {
             // Clean up the temporary file list
             fs.unlinkSync(listPath)
-            
+
             if (code === 0) {
                 resolve({ outputPath })
             } else {
@@ -146,12 +149,7 @@ export async function getVideosForKeywords({
     keywords,
 }: {
     keywords: string[]
-}): Promise<{
-    videos: Array<{
-        keyword: string
-        filePath: string | null
-    }>
-}> {
+}) {
     const results = await Promise.all(
         keywords.map(async (keyword) => {
             try {
@@ -189,24 +187,28 @@ export async function getVideosForKeywords({
                 return {
                     keyword,
                     filePath,
+                    url: pexelsResult.bestResultUrl,
+                    thumbnailUrl: pexelsResult.thumbnailUrl,
                 }
             } catch (error) {
                 console.error(
                     `Error processing video for keyword "${keyword}":`,
                     error,
                 )
-                return {
-                    keyword,
-                    filePath: null,
-                }
+                return
             }
         }),
     )
 
     return {
-        videos: results.filter((result) => result.filePath !== null),
+        videos: results.filter(isTruthy).filter((result) => result?.filePath !== null),
     }
 }
+
+export function isTruthy<T>(value: T | null | undefined | false): value is T {
+    return Boolean(value)
+}
+
 
 // bashupload.com is a free service to upload files temporarily, they are deleted after 3 days
 export async function uploadImage(
@@ -239,15 +241,17 @@ export async function uploadImage(
     }
 }
 
-
 export async function* fakeStreaming(text: string) {
     const words = text.split(/\s+/)
     let output = ''
     for (const word of words) {
         output += (output ? ' ' : '') + word
         yield output
-        await new Promise(resolve => setTimeout(resolve, 80))
+        await new Promise((resolve) => setTimeout(resolve, 80))
     }
 }
 
 
+export function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms))
+}
