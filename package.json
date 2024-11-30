@@ -18,6 +18,7 @@
     "@react-router/fs-routes": "^7.0.1",
     "@react-router/node": "7.0.1-pre.0",
     "@react-router/serve": "7.0.1-pre.0",
+    "@vercel/blob": "^0.26.0",
     "ai": "^4.0.9",
     "dom-serializer": "^2.0.0",
     "framer-motion": "^11.12.0",

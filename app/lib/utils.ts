@@ -265,37 +265,6 @@ export function isTruthy<T>(value: T | null | undefined | false): value is T {
     return Boolean(value)
 }
 
-// bashupload.com is a free service to upload files temporarily, they are deleted after 3 days
-export async function uploadFile(
-    fileContent: ArrayBuffer,
-    fileName = 'file.pm4',
-) {
-    console.time('uploadImage')
-    console.log('Uploading file to https://bashupload.com:', fileName)
-    try {
-        const formData = new FormData()
-        formData.append('file', new Blob([fileContent]), fileName)
-
-        const response = await fetch('https://bashupload.com', {
-            method: 'POST',
-            body: formData,
-        })
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
-        }
-
-        const responseText = await response.text()
-        const match = responseText.trim().match(/https:\/\/[^\s]+/)
-        console.timeEnd('uploadImage')
-        return match ? match[0] + '?download=1' : ''
-    } catch (error) {
-        console.error('Error uploading file:', error)
-        console.timeEnd('uploadImage')
-        return null
-    }
-}
-
 export async function* fakeStreaming(text: string) {
     const words = text.split(/\s+/)
     let output = ''
@@ -309,7 +278,6 @@ export async function* fakeStreaming(text: string) {
 export function sleep(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms))
 }
-
 
 export async function getTemplateInfo(templateId: string) {
     try {
@@ -361,5 +329,53 @@ export async function getVideoDetails(videoId: string) {
     } catch (error) {
         console.error('Error getting video status:', error)
         throw error
+    }
+}
+import { put } from '@vercel/blob'
+
+export async function uploadFile({
+    content,
+    filename,
+}: {
+    content: string | Buffer
+    filename: string
+}) {
+    try {
+        const { url } = await put(filename, content, { access: 'public' })
+        return url
+    } catch (error) {
+        console.error('Error uploading to Vercel Blob:', error)
+        throw error
+    }
+}
+
+// bashupload.com is a free service to upload files temporarily, they are deleted after 3 days
+export async function _uploadFile(
+    fileContent: ArrayBuffer,
+    fileName = 'file.pm4',
+) {
+    console.time('uploadImage')
+    console.log('Uploading file to https://bashupload.com:', fileName)
+    try {
+        const formData = new FormData()
+        formData.append('file', new Blob([fileContent]), fileName)
+
+        const response = await fetch('https://bashupload.com', {
+            method: 'POST',
+            body: formData,
+        })
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        const responseText = await response.text()
+        const match = responseText.trim().match(/https:\/\/[^\s]+/)
+        console.timeEnd('uploadImage')
+        return match ? match[0] + '?download=1' : ''
+    } catch (error) {
+        console.error('Error uploading file:', error)
+        console.timeEnd('uploadImage')
+        return null
     }
 }
