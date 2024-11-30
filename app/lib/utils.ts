@@ -194,7 +194,7 @@ export async function combineVideos({
 
     // Concatenate trimmed files using stream copy since they're already in the right format
     return new Promise<{ outputPath: string }>((resolve, reject) => {
-        const concatCommand = `ffmpeg -f concat -safe 0 -i "${listPath}" -c copy "${outputPath}"`
+        const concatCommand = `ffmpeg -f concat -safe 0 -i "${listPath}" -c:v libx264 -preset medium -crf 23 -c:a aac -b:a 128k "${outputPath}"`
         const ffmpeg = spawn(concatCommand, {
             shell: true,
             stdio: 'inherit',

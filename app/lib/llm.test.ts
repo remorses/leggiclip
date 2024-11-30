@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { defaultLawText, generateTikTokScripts, generateVideosHandler } from './llm'
+import { defaultLawText, generateVideosHandler } from './llm'
+import { generateTikTokScripts } from '~/lib/script'
 
 describe('generateVideosHandler', () => {
     it(
