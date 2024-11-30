@@ -55,13 +55,22 @@ export const action: ActionFunction = async ({ request }) => {
         const template_id = '3d88fbeeccd84c1193d4009bf11eb5f1'
         const script = body.script
         const variables: Variables = {
-            // title: {
-            //     name: 'title',
-            //     type: 'text',
-            //     properties: {
-            //         content: body.title || 'New Video',
-            //     },
-            // },
+            title: {
+                name: 'title',
+                type: 'text',
+                properties: {
+                    content: body.title || 'New Video',
+                },
+            },
+            bg: {
+                name: 'bg',
+                type: 'image',
+                properties: {
+                    url: 'https://files2.heygen.ai/prod/movio/preset/image/origin/28e0c75a51624ee89d3c4a1eb044ef2c.jpg',
+                    // asset_id: null,
+                    fit: 'cover',
+                },
+            },
             script_it: {
                 name: 'script_it',
                 type: 'text',
@@ -80,7 +89,7 @@ export const action: ActionFunction = async ({ request }) => {
                     'X-Api-Key': env.HEYGEN_API_KEY || '',
                 },
                 body: JSON.stringify({
-                    // caption: true,
+                    caption: true,
                     // test: true,
                     template_id,
                     title: body.title || 'New Video Title',

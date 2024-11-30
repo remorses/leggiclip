@@ -6,6 +6,7 @@
     "build": "react-router build",
     "dev": "doppler run -- react-router dev",
     "start": "react-router-serve ./build/server/index.js",
+    "test": "doppler run -- vitest",
     "test:generate": "doppler run -- tsx scripts/generate-test.ts",
     "test:check": "doppler run -- tsx scripts/test-check.ts",
     "test:template": "doppler run -- tsx scripts/test-template.ts",
@@ -16,9 +17,11 @@
     "@react-router/node": "7.0.1-pre.0",
     "@react-router/serve": "7.0.1-pre.0",
     "isbot": "^5.1.17",
+    "pexels": "^1.4.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router": "7.0.1-pre.0"
+    "react-router": "7.0.1-pre.0",
+    "vitest": "^2.1.6"
   },
   "devDependencies": {
     "@react-router/dev": "7.0.1-pre.0",
