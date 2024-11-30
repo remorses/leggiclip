@@ -7,15 +7,20 @@ import {
 } from './utils'
 import { generateVideosHandler } from '~/lib/llm'
 
-
-
 describe('getVideosForKeywords and combineVideos', () => {
     it(
         'gets videos and combines them',
         async () => {
             // Get videos for multiple keywords
             const result = await getVideosForKeywords({
-                keywords: ['transport', 'cars', 'law'],
+                keywords: [
+                    'transport',
+                    'cars',
+                    'law',
+                    'study',
+                    'safety',
+                    'semaphore',
+                ],
             })
 
             expect(result.videos.length).toBeGreaterThan(0)
@@ -26,7 +31,6 @@ describe('getVideosForKeywords and combineVideos', () => {
                 segmentDurationSeconds: 2,
             })
 
-            
             console.log('Combined video output path:', outputPath)
         },
         1000 * 60,
@@ -49,10 +53,7 @@ describe(
             const videoBuffer = Buffer.from(await videoResponse.arrayBuffer())
 
             // Upload the video
-            const uploadResult = await uploadFile(
-                videoBuffer,
-                'test-video.mp4',
-            )
+            const uploadResult = await uploadFile(videoBuffer, 'test-video.mp4')
             expect(uploadResult).toMatch(/^https:\/\/.*\?download=1$/)
             console.log('Upload URL:', uploadResult)
         })

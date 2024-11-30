@@ -106,40 +106,63 @@ export async function combineVideos({
     videoPaths: string[]
     segmentDurationSeconds?: number
 }): Promise<{ outputPath: string }> {
-    return new Promise((resolve, reject) => {
-        const outputDir = 'output-videos'
-        fs.mkdirSync(outputDir, { recursive: true })
-        const outputPath = `${outputDir}/output-${Date.now()}.mp4`
+    const outputDir = 'output-videos'
+    const tempDir = 'temp-videos'
+    fs.mkdirSync(outputDir, { recursive: true })
+    fs.mkdirSync(tempDir, { recursive: true })
+    const outputPath = `${outputDir}/output-${Date.now()}.mp4`
 
-        // Create a temporary file list
-        const fileList = videoPaths
-            .map((path, index) => {
-                // For each input, specify inpoint and outpoint for duration
-                return `file '${path}'\ninpoint 0\noutpoint ${segmentDurationSeconds}`
+    // First, trim each video using stream copy
+    const trimPromises = videoPaths.map((videoPath, index) => {
+        return new Promise<string>((resolveTrim, rejectTrim) => {
+            const trimmedPath = `${tempDir}/trimmed-${index}-${Date.now()}.mp4`
+            // Use -ss before -i for faster seeking and -c copy for stream copying
+            const trimCommand = `ffmpeg -ss 0 -t ${segmentDurationSeconds} -i "${videoPath}" -c copy "${trimmedPath}"`
+
+            const ffmpeg = spawn(trimCommand, {
+                shell: true,
+                stdio: 'inherit',
             })
-            .join('\n')
-        const listPath = `${outputDir}/list-${Date.now()}.txt`
-        fs.writeFileSync(listPath, fileList)
+            ffmpeg.on('close', (code) => {
+                if (code === 0) resolveTrim(trimmedPath)
+                else
+                    rejectTrim(
+                        new Error(`Trim process exited with code ${code}`),
+                    )
+            })
+            ffmpeg.on('error', rejectTrim)
+        })
+    })
 
-        // Use concat demuxer with segment duration limits and reencode
-        const command = `ffmpeg -f concat -safe 0 -i "${listPath}" -c:v libx264 -preset ultrafast -c:a aac "${outputPath}"`
+    // After all trims are complete, concatenate the trimmed files
+    const trimmedPaths = await Promise.all(trimPromises)
+    const fileList = trimmedPaths.map((path) => `file '${path}'`).join('\n')
+    const listPath = `list-${Date.now()}.txt`
+    fs.writeFileSync(listPath, fileList)
 
-        const ffmpeg = spawn(command, { shell: true,  stdio: 'inherit' })
+    // Concatenate trimmed files using stream copy
+    return new Promise<{ outputPath: string }>((resolve, reject) => {
+        const concatCommand = `ffmpeg -f concat -safe 0 -i "${listPath}" -c copy "${outputPath}"`
+        const ffmpeg = spawn(concatCommand, {
+            shell: true,
+            stdio: 'inherit',
+        })
 
         ffmpeg.on('close', (code) => {
-            // Clean up the temporary file list
+            // Clean up temporary files
             fs.unlinkSync(listPath)
+            trimmedPaths.forEach((path) => fs.unlinkSync(path))
+            fs.rmdirSync(tempDir, { recursive: true })
 
-            if (code === 0) {
-                resolve({ outputPath })
-            } else {
-                reject(new Error(`ffmpeg process exited with code ${code}`))
-            }
+            if (code === 0) resolve({ outputPath })
+            else reject(new Error(`Concat process exited with code ${code}`))
         })
 
         ffmpeg.on('error', (error) => {
-            // Clean up the temporary file list on error too
+            // Clean up on error
             fs.unlinkSync(listPath)
+            trimmedPaths.forEach((path) => fs.unlinkSync(path))
+            fs.rmdirSync(tempDir, { recursive: true })
             reject(error)
         })
     })
@@ -201,14 +224,15 @@ export async function getVideosForKeywords({
     )
 
     return {
-        videos: results.filter(isTruthy).filter((result) => result?.filePath !== null),
+        videos: results
+            .filter(isTruthy)
+            .filter((result) => result?.filePath !== null),
     }
 }
 
 export function isTruthy<T>(value: T | null | undefined | false): value is T {
     return Boolean(value)
 }
-
 
 // bashupload.com is a free service to upload files temporarily, they are deleted after 3 days
 export async function uploadFile(
@@ -251,7 +275,6 @@ export async function* fakeStreaming(text: string) {
     }
 }
 
-
 export function sleep(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms))
+    return new Promise((resolve) => setTimeout(resolve, ms))
 }
