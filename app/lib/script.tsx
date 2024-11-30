@@ -15,7 +15,7 @@ export async function* generateTikTokScripts({
     description: string
     numItems?: number
 }) {
-    const prompt = `Analyze the law text and generate ${numItems} concise 60-second educational video scripts about: ${description}
+    const prompt = `Analyze the law text and generate ${numItems} concise 30-second educational video scripts about: ${description}
 
 Law text:
 <law_text>
@@ -25,54 +25,45 @@ ${lawText}
 First, let's think through the key aspects step by step:
 
 1. Core Legal Concepts:
-- What are the main legal principles being addressed?
-- Which specific regulations need to be explained?
-- What are the key compliance requirements?
+- What is the single most important legal principle to convey?
+- Which specific regulation needs clear explanation?
 
 2. Real-World Impact:
 - How does this law affect everyday situations?
-- What common misconceptions exist?
-- What are the consequences of non-compliance?
+- What's the most common misconception?
 
 3. Practical Application:
-- What specific actions should people take?
-- What are the best practices for compliance?
-- What tools or resources are available?
+- What is the key action people should take?
+- What's the most important compliance tip?
 
 4. Educational Goals:
-- What are the 3 most important takeaways?
-- How can we make complex concepts relatable?
-- What behavioral changes are we promoting?
+- What is the ONE critical takeaway?
+- How can we make this concept instantly relatable?
 
-Now, structure each 60-second video using this simplified hero's journey framework:
-1. The Call (10s): Present a common situation where this law becomes relevant
-2. The Threshold (10s): Show what happens when someone encounters this legal requirement
-3. The Journey (15s): Walk through understanding and adapting to the law
-4. The Boons (15s): Highlight the key learnings and practical tips
+Now, structure each 30-second video using this tight framework:
+1. The Hook (5s): Present a relatable situation
+2. The Problem (5s): Show the legal challenge
+3. The Solution (10s): Explain the key legal concept
+4. The Action (10s): Give clear, practical guidance
 
 Then, provide exactly ${numItems} sets of responses in XML format, each containing:
-<video_script>Clear, direct script that follows the hero framework and fits within 60 seconds. Focus on education and practical application.</video_script>
-<keywords>At least 10 comma-separated search terms for background footage that matches the script timeline. Each term will be used to find relevant video clips.</keywords>
-<title>An informative title that captures the key learning</title>
+<video_script>Clear, direct script that fits within 30 seconds. Focus on ONE key learning and immediate practical application.</video_script>
+<keywords>At least 5 comma-separated search terms for background footage that matches the script timeline. Each term will be used to find relevant video clips.</keywords>
+<title>A focused title that captures the key learning</title>
 
 Example output for one set:
-<video_script>A driver approaches an unfamiliar road. The speed limit shows 55, but heavy rain is falling.
+<video_script>A driver speeds down a residential street. The speed limit is 25, but children are playing nearby.
 
-The law demands more than following posted limits - it requires judgment based on conditions.
+Speed limits aren't just numbers - they're about protecting lives.
 
-Let's master the key factors:
-- Weather reduces visibility and traction
-- Traffic density affects safe spacing
-- Road conditions determine stopping distance
+The law requires drivers to:
+- Slow down in residential areas
+- Watch for pedestrians
+- Adjust speed for conditions
 
-Research proves that adaptive speeds:
-- Cut accident risk by half
-- Save lives in adverse conditions
-- Protect all road users
-
-This knowledge transforms us from rule-followers into responsible drivers who make our roads safer for everyone.</video_script>
-<keywords>rainy road view, speed limit sign, wet braking demonstration, traffic flow diagram, road condition analysis, accident prevention chart, visibility comparison, safe following distance, road safety statistics, community impact graphic</keywords>
-<title>Smart Speed Choices: Beyond the Posted Limits</title>`
+Remember: The right speed saves lives. Drive like your family lives here.</video_script>
+<keywords>residential street view, children playing, speed limit sign, careful driving, neighborhood safety</keywords>
+<title>Residential Speed Limits: Protecting Our Communities</title>`
 
     let items: Array<{
         title: string
@@ -116,3 +107,71 @@ This knowledge transforms us from rule-followers into responsible drivers who ma
     // Make sure to yield final state
     yield items
 }
+
+
+let scriptPrompt = `
+🕓🕓Use the Pause button for natural flow🕓🕓
+There are two types of pauses-
+
+In-script pause- Pause in between the words of the script.
+
+Between-sections-pause- Pause made between different script sections in your video.
+
+Move your text cursor to the desired location in the script.
+
+Click the "🕓Add Pause🕓" button at the bottom left.
+
+Each pause represents a half-second break; you can add multiple pauses for a longer break.
+
+To create pauses between scripts, find the Clock Icon underneath your script.
+
+ 
+
+✏️✏️Incorporate Punctuation Marks✏️✏️
+Hyphens (-): Separate syllables for clear pronunciation.
+
+Commas (,): Create shorter breaks.
+
+Periods (.): Introduce longer breaks with downward inflection.
+
+ 
+
+🔤🔤Ensure Correct Spelling and Language Consistency🔤🔤
+Spell Correctly: Double-check your script for spelling errors.
+
+Language Consistency: Avoid mixing languages. For instance, do not include Arabic words in an English script.
+
+ 
+
+🗣️🗣️  Use our Pronunciation feature 🗣️ 🗣️ 
+If you Preview your script and you feel some words aren't being pronounced correctly, you can double-click them and chose Pronunciation - here you can type exactly how you'd like the word to be pronounced. You can also use hyphens (-) to emphasize pronunciation.
+
+This is particularly useful with Acronyms- 
+
+"AI" should be "a-eye."
+
+"AWS" becomes "a-double you-s."
+
+ 
+
+ 
+
+ 
+
+🔢🔢 How to write Numbers 🔢🔢
+You can write out numbers or use phonetic spelling for clarity. Examples:
+
+"2012" should be "twenty twelve."
+
+"3/8" becomes "three eighths of an inch."
+
+"01:18" should be "one minute and eighteen seconds."
+
+"10-19-2016" is "October nineteenth two thousand sixteen."
+
+"150th CT NE, Redmond, WA" should be "150th Court Northeast Redmond Washington."
+
+ 
+
+For a more detailed walkthrough of our Scripts feature, please see this article here. Happy scripting!
+`

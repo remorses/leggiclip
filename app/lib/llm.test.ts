@@ -1,6 +1,26 @@
 import { describe, it, expect } from 'vitest'
-import { defaultLawText, generateVideosHandler } from './llm'
+import { defaultLawText, generateVideo, generateVideosHandler } from './llm'
 import { generateTikTokScripts } from '~/lib/script'
+
+
+describe('generateVideo heygen', () => {
+    it('generates a video with the provided script and background', async () => {
+        const result = await generateVideo({
+            title: 'Speed Limit Laws: Keeping Our Roads Safe',
+            script: 'Sai qual è il limite di alcol nel sangue per guidare in Italia? È 0,5 grammi per litro. Superarlo è un reato grave con multe e sospensione della patente. Se bevi, non guidare - chiama un taxi.',
+
+            bgUrl: 'https://bh6ssk0uvzevsisn.public.blob.vercel-storage.com/combined-1733009490338-LvLjPy0cLkzr36Sf2T0ODJTyJLskl7.mp4',
+        })
+        console.log('result:', result)
+
+        expect(result).toHaveProperty('video_id')
+        // expect(result).toHaveProperty('status')
+        expect(typeof result.video_id).toBe('string')
+        // expect(typeof result.status).toBe('string')
+    })
+
+})
+
 
 describe('generateVideosHandler', () => {
     it(

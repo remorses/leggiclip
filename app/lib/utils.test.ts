@@ -7,8 +7,19 @@ import {
     getVideosForKeywords,
     uploadFile,
 } from './utils'
-import { generateVideosHandler } from '~/lib/llm'
+import { generateVideosHandler, getVideoStatus } from '~/lib/llm'
 import { templateId } from '~/lib/env'
+
+
+describe('getVideoStatus', () => {
+    it('gets video status', async () => {
+        const videoId = 'b640b58b3f634d51be2ec67dd0b26520'
+        const result = await getVideoStatus(videoId)
+        
+        console.log('Video status:', JSON.stringify(result, null, 2))
+        expect(result).toBeTruthy()
+    })
+})
 
 
 describe('getTemplateInfo', () => {
@@ -24,7 +35,7 @@ describe('getTemplateInfo', () => {
 
 describe('getVideoDetails', () => {
     it('gets video details', async () => {
-        const videoId = '5401a061e858407da382cb883db1f1e3'
+        const videoId = 'b640b58b3f634d51be2ec67dd0b26520'
         const result = await getVideoDetails(videoId)
         expect(result).toBeTruthy()
         console.log('Video details:', JSON.stringify(result, null, 2))

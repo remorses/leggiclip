@@ -105,7 +105,7 @@ export async function* generateVideosHandler(
     // Return final state with generated videos
 }
 
-async function getVideoStatus(videoId: string) {
+export async function getVideoStatus(videoId: string) {
     try {
         const response = await fetch(
             `https://api.heygen.com/v1/video_status.get?video_id=${videoId}`,
@@ -126,6 +126,7 @@ async function getVideoStatus(videoId: string) {
 
         const data_ = await response.json()
         const data = data_?.data
+        console.log('data:', data)
 
         return {
             videoStatus: data.status,
@@ -139,7 +140,7 @@ async function getVideoStatus(videoId: string) {
 
 
 
-async function generateVideo({
+export async function generateVideo({
     title,
     script,
 
