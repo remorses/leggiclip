@@ -337,3 +337,29 @@ export async function getTemplateInfo(templateId: string) {
         throw error
     }
 }
+export async function getVideoDetails(videoId: string) {
+    try {
+        const response = await fetch(
+            `https://api.heygen.com/v1/video_status.get?video_id=${videoId}`,
+            {
+                headers: {
+                    accept: 'application/json',
+                    'X-Api-Key': env.HEYGEN_API_KEY || '',
+                },
+            },
+        )
+
+        if (!response.ok) {
+            const text = await response.text()
+            throw new Error(
+                `Video status request failed: ${response.statusText} - ${text}`,
+            )
+        }
+
+        const data = await response.json()
+        return data.data
+    } catch (error) {
+        console.error('Error getting video status:', error)
+        throw error
+    }
+}

@@ -3,6 +3,7 @@ import {
     combineVideos,
     getTemplateInfo,
     getUnsplashVideo,
+    getVideoDetails,
     getVideosForKeywords,
     uploadFile,
 } from './utils'
@@ -17,6 +18,16 @@ describe('getTemplateInfo', () => {
         expect(result).toBeTruthy()
         console.log('Template info:', JSON.stringify(result, null, 2))
         // expect(result.template_id).toBe(templateId)
+    })
+})
+
+
+describe('getVideoDetails', () => {
+    it('gets video details', async () => {
+        const videoId = '5401a061e858407da382cb883db1f1e3'
+        const result = await getVideoDetails(videoId)
+        expect(result).toBeTruthy()
+        console.log('Video details:', JSON.stringify(result, null, 2))
     })
 })
 
