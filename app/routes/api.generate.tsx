@@ -20,12 +20,16 @@ type Variables = Record<
         type: string
         properties: {
             url?: string
-            text?: string
+            content?: string
             asset_id?: string | null
             fit?: string
         }
     }
 >
+
+export const loader = async () => {
+    return json({ error: 'Method not allowed - use POST' }, { status: 405 })
+}
 
 export const action: ActionFunction = async ({ request }) => {
     if (request.method !== 'POST') {
@@ -45,19 +49,28 @@ export const action: ActionFunction = async ({ request }) => {
                 { status: 400 },
             )
         }
+        console.log(parseResult.data)
 
         const body = parseResult.data
-        const template_id = body.template_id || '5910f0667387494fa248fb48e3625d25'
+        const template_id = '3d88fbeeccd84c1193d4009bf11eb5f1'
         const script = body.script
         const variables: Variables = {
-            script: {
-                name: 'script',
+            // title: {
+            //     name: 'title',
+            //     type: 'text',
+            //     properties: {
+            //         content: body.title || 'New Video',
+            //     },
+            // },
+            script_it: {
+                name: 'script_it',
                 type: 'text',
                 properties: {
-                    text: script,
+                    content: script,
                 },
             },
         }
+        // console.log('HEYGEN_API_KEY',env.HEYGEN_API_KEY)
         const response = await fetch(
             `https://api.heygen.com/v2/template/${template_id}/generate`,
             {
@@ -67,8 +80,12 @@ export const action: ActionFunction = async ({ request }) => {
                     'X-Api-Key': env.HEYGEN_API_KEY || '',
                 },
                 body: JSON.stringify({
-                    caption: true,
-                    title: body.title || 'New Video',
+                    // caption: true,
+                    // test: true,
+                    template_id,
+                    title: body.title || 'New Video Title',
+                    // dimension: { width: 405, height: 720 },
+                    // aspect_ratio: null,
                     variables,
                 }),
             },
@@ -79,12 +96,16 @@ export const action: ActionFunction = async ({ request }) => {
         }
 
         const data = await response.json()
+        console.log(data)
         return json({
             id: data.video_id,
             url: data.video_url,
         })
     } catch (error) {
         console.error('Generation error:', error)
-        return json({ error: 'Failed to generate video' }, { status: 500 })
+        return json(
+            { error: error instanceof Error ? error.message : 'An unknown error occurred' },
+            { status: 500 }
+        )
     }
 }

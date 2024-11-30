@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@react-router/fs-routes':
+        specifier: ^7.0.1
+        version: 7.0.1(@react-router/dev@7.0.1-pre.0(@react-router/serve@7.0.1-pre.0(react-router@7.0.1-pre.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.7.2))(@types/node@20.17.9)(react-router@7.0.1-pre.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.7.2)(vite@5.4.11(@types/node@20.17.9)))(typescript@5.7.2)
       '@react-router/node':
         specifier: 7.0.1-pre.0
         version: 7.0.1-pre.0(react-router@7.0.1-pre.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.7.2)
@@ -418,6 +421,16 @@ packages:
     peerDependencies:
       express: ^4.17.1
       react-router: 7.0.1-pre.0
+      typescript: ^5.1.0
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
+  '@react-router/fs-routes@7.0.1':
+    resolution: {integrity: sha512-ibg8w3gwe+3u9hBE9LfMKUu+32u5nPaD0j197XZ+9esKtKTFEW2QsWXCQroQ/8NjIKSCFxxw1Bl56UAotKYAvA==}
+    engines: {node: '>=20.0.0'}
+    peerDependencies:
+      '@react-router/dev': ^7.0.1
       typescript: ^5.1.0
     peerDependenciesMeta:
       typescript:
@@ -2040,6 +2053,13 @@ snapshots:
       '@react-router/node': 7.0.1-pre.0(react-router@7.0.1-pre.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.7.2)
       express: 4.21.1
       react-router: 7.0.1-pre.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+    optionalDependencies:
+      typescript: 5.7.2
+
+  '@react-router/fs-routes@7.0.1(@react-router/dev@7.0.1-pre.0(@react-router/serve@7.0.1-pre.0(react-router@7.0.1-pre.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.7.2))(@types/node@20.17.9)(react-router@7.0.1-pre.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.7.2)(vite@5.4.11(@types/node@20.17.9)))(typescript@5.7.2)':
+    dependencies:
+      '@react-router/dev': 7.0.1-pre.0(@react-router/serve@7.0.1-pre.0(react-router@7.0.1-pre.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.7.2))(@types/node@20.17.9)(react-router@7.0.1-pre.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.7.2)(vite@5.4.11(@types/node@20.17.9))
+      minimatch: 9.0.5
     optionalDependencies:
       typescript: 5.7.2
 

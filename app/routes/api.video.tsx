@@ -22,9 +22,10 @@ export const loader: LoaderFunction = async ({ request }) => {
         )
 
         if (!response.ok) {
-            throw new Error(`API request failed: ${response.statusText}`)
+            const text = await response.text()
+            throw new Error(`API request failed: ${response.statusText} - ${text}`)
         }
-
+        console.log(response)
         const data = await response.json()
         return json({
             id: data.video_id,
@@ -33,6 +34,9 @@ export const loader: LoaderFunction = async ({ request }) => {
         })
     } catch (error) {
         console.error('Video status fetch error:', error)
-        return json({ error: 'Failed to fetch video status' }, { status: 500 })
+        return json({ 
+            error: 'Failed to fetch video status',
+            details: error instanceof Error ? error.message : 'An unknown error occurred'
+        }, { status: 500 })
     }
 }

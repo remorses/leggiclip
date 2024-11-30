@@ -4,11 +4,15 @@
   "type": "module",
   "scripts": {
     "build": "react-router build",
-    "dev": "react-router dev",
+    "dev": "doppler run -- react-router dev",
     "start": "react-router-serve ./build/server/index.js",
+    "test:generate": "doppler run -- tsx scripts/generate-test.ts",
+    "test:check": "doppler run -- tsx scripts/test-check.ts",
+    "test:template": "doppler run -- tsx scripts/test-template.ts",
     "typecheck": "react-router typegen && tsc --build --noEmit"
   },
   "dependencies": {
+    "@react-router/fs-routes": "^7.0.1",
     "@react-router/node": "7.0.1-pre.0",
     "@react-router/serve": "7.0.1-pre.0",
     "isbot": "^5.1.17",
