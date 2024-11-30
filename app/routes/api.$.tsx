@@ -32,6 +32,21 @@ type Variables = Record<
     }
 >
 
+export type VideoItem = {
+    keywords: string[]
+    title: string
+    script: string
+    bgUrl?: string
+    videoId?: string
+    status?: string
+    url?: string
+    bgVideos?: Array<{
+        url: string
+        thumbnailUrl: string
+        filePath: string | null
+    }>
+}
+
 export const app = new Spiceflow({ basePath: '/api' }).post(
     '/generate',
     async function* ({ request }) {
@@ -44,44 +59,30 @@ export const app = new Spiceflow({ basePath: '/api' }).post(
             numItems: numVideos,
         })
 
-        type Item = {
-            keywords: string[]
-            title: string
-            script: string
-            bgUrl?: string
-            videoId?: string
-            status?: string
-            url?: string
-            videos?: Array<{
-                url: string
-                thumbnailUrl: string
-                filePath: string | null
-            }>
-        }
-        let videoScripts: Item[] = []
+        let videos: VideoItem[] = []
         for await (const scripts of scriptsStream) {
-            videoScripts = scripts
-            yield { videoScripts: videoScripts }
+            videos = scripts
+            yield { videos: videos }
         }
 
         // Get background videos for each item's keywords
-        for (const item of videoScripts) {
+        for (const item of videos) {
             const result = await getVideosForKeywords({
                 keywords: item.keywords,
             })
 
             // Store video paths
-            item.videos = result.videos
-            yield { videoScripts: videoScripts }
+            item.bgVideos = result.videos
+            yield { videos: videos }
         }
 
         // Get background videos for each item's keywords
-        for (const item of videoScripts) {
+        for (const item of videos) {
             const res = await combineVideos({
                 videoPaths: item
-                    .videos!.map((video) => video!.filePath!)
+                    .bgVideos!.map((video) => video!.filePath!)
                     .filter(isTruthy),
-                segmentDurationSeconds: 2,
+                segmentDurationSeconds: 3,
             })
             // Upload the combined video
             const fileContent = await fs.promises.readFile(res.outputPath)
@@ -93,12 +94,13 @@ export const app = new Spiceflow({ basePath: '/api' }).post(
                 throw new Error('Failed to upload combined video')
             }
             item.bgUrl = uploadUrl!
-            yield { videoScripts: videoScripts }
+            yield { videos: videos }
         }
 
         // Generate all videos in parallel
+        return
 
-        for (const item of videoScripts) {
+        for (const item of videos) {
             const video = await generateVideo({
                 title: item.title,
                 script: item.script,
@@ -107,12 +109,12 @@ export const app = new Spiceflow({ basePath: '/api' }).post(
             item.videoId = video.video_id
             item.status = video.status
         }
-        // Poll for video status updates until all are complete
-        while (videoScripts.some((item) => !item.url)) {
+
+        while (videos.some((item) => !item.url)) {
             await sleep(1000 * 5)
 
             await Promise.all(
-                videoScripts
+                videos
                     .filter((item) => !item?.url && item?.videoId)
                     .map(async (item) => {
                         const result = await getVideoStatus(item.videoId!)
@@ -123,9 +125,9 @@ export const app = new Spiceflow({ basePath: '/api' }).post(
                     }),
             )
 
-            yield { videoScripts }
+            yield { videos }
         }
-        yield { videoScripts }
+        yield { videos }
 
         // Return final state with generated videos
     },
@@ -249,7 +251,6 @@ export const loader = async ({ request }: { request: Request }) => {
 type ExtractGeneratorType<T> = T extends AsyncGenerator<infer U> ? U : never
 
 type ArrayItem<T> = T extends (infer U)[] ? U : never
-
 
 const defaultLawText = `Articolo 1 - Principi generali del Codice della Strada
 1. La sicurezza delle persone, nella circolazione stradale, è un obiettivo primario dello Stato.

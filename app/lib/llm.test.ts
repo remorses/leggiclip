@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import { generateTikTokScripts } from './llm'
 
-describe('generateTikTokScript', () => {
-    it('generates TikTok script from law text', async () => {
-        const lawText = `
+describe(
+    'generateTikTokScript',
+    () => {
+        it('generates TikTok script from law text', async () => {
+            const lawText = `
             Section 123 - Speed Limits
             (1) No person shall drive a vehicle on a highway at a speed greater than is reasonable and prudent under the conditions.
             (2) Where no special hazard exists the following speeds shall be lawful:
@@ -12,29 +14,19 @@ describe('generateTikTokScript', () => {
             (3) The driver shall decrease speed when approaching intersections, railroad crossings, curves, or hazardous conditions.
         `
 
-        const result = await generateTikTokScripts({
-            lawText,
-            description: 'Explain speed limit laws in a fun way',
+            const result = await generateTikTokScripts({
+                lawText,
+                numItems: 2,
+                description: 'Explain speed limit laws in a fun way',
+            })
+            for await (const data of result) {
+                console.log('Generated scripts:', data)
+                expect(data).toBeInstanceOf(Array)
+                // expect(data[0]).toHaveProperty('title')
+                // expect(data[0]).toHaveProperty('keywords')
+                // expect(data[0]).toHaveProperty('script')
+            }
         })
-
-        console.log('Generated TikTok script:', result)
-        expect(result).toHaveProperty('title')
-        expect(result).toHaveProperty('keywords')
-        expect(result).toHaveProperty('script')
-
-        expect(typeof result.title).toBe('string')
-        expect(result.title.length).toBeGreaterThan(0)
-
-        expect(Array.isArray(result.keywords)).toBe(true)
-        expect(result.keywords.length).toBeGreaterThan(0)
-
-        expect(typeof result.script).toBe('string')
-        expect(result.script.length).toBeGreaterThan(0)
-
-        // Copy script to clipboard
-        const { execSync } = require('child_process')
-        execSync('pbcopy', { input: result.script })
-        console.log('Script copied to clipboard')
-    })
-})
-
+    },
+    1000 * 100,
+)

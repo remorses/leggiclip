@@ -59,26 +59,30 @@ Stay safe out there besties! Don't forget to follow for more legal tips that cou
         model: openai('gpt-4o'),
         system: 'You are a charismatic TikTok influencer who explains laws in a fun and engaging way.',
         prompt,
+        
     })
     let lastYieldTime = 0
+    let allText = ''
     for await (const chunk of stream.textStream) {
         const now = Date.now()
-        if (now - lastYieldTime < 1000) continue
+        allText += chunk
 
         const result = extractTagsArrays({
-            xml: chunk,
+            xml: allText,
             tags: ['title', 'keywords', 'video_script'],
         })
 
         // Update items with any new complete sets
         const newItems = result.title.map((title, i) => ({
             title,
-            keywords:
-                result.keywords[i]?.split(',').map((k) => k.trim()) || [],
+            keywords: result.keywords[i]?.split(',').map((k) => k.trim()) || [],
             script: result.video_script[i] || '',
         }))
 
         items = newItems
+        if (now - lastYieldTime < 1000) {
+            continue
+        }
 
         // Yield current state of items at most once per second
 
