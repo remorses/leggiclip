@@ -1,8 +1,6 @@
-import type { ActionFunction } from 'react-router'
-import { env } from '~/lib/env'
-import { json } from '~/lib/utils'
-
+import { Spiceflow } from 'spiceflow'
 import { z } from 'zod'
+import { env } from '~/lib/env'
 
 const GenerateRequest = z.object({
     template_id: z.string().optional(),
@@ -11,7 +9,11 @@ const GenerateRequest = z.object({
     keywords: z.array(z.string()).optional(),
 })
 
-type GenerateRequest = z.infer<typeof GenerateRequest>
+const GenerateResponse = z.object({
+    id: z.string(),
+    url: z.string(),
+    data: z.record(z.any()).optional(),
+})
 
 type Variables = Record<
     string,
@@ -27,33 +29,11 @@ type Variables = Record<
     }
 >
 
-export const loader = async () => {
-    return json({ error: 'Method not allowed - use POST' }, { status: 405 })
-}
-
-export const action: ActionFunction = async ({ request }) => {
-    if (request.method !== 'POST') {
-        return json({ error: 'Method not allowed' }, { status: 405 })
-    }
-
-    try {
-        const rawBody = await request.json()
-        const parseResult = GenerateRequest.safeParse(rawBody)
-
-        if (!parseResult.success) {
-            return json(
-                {
-                    error: 'Invalid request body',
-                    details: parseResult.error.errors,
-                },
-                { status: 400 },
-            )
-        }
-        console.log(parseResult.data)
-
-        const body = parseResult.data
+export const app = new Spiceflow({ basePath: '/api' }).post(
+    '/generate',
+    async function* ({ request }) {
+        const body = await request.json()
         const template_id = '3d88fbeeccd84c1193d4009bf11eb5f1'
-        const script = body.script
         const variables: Variables = {
             title: {
                 name: 'title',
@@ -67,7 +47,6 @@ export const action: ActionFunction = async ({ request }) => {
                 type: 'image',
                 properties: {
                     url: 'https://files2.heygen.ai/prod/movio/preset/image/origin/28e0c75a51624ee89d3c4a1eb044ef2c.jpg',
-                    // asset_id: null,
                     fit: 'cover',
                 },
             },
@@ -75,11 +54,11 @@ export const action: ActionFunction = async ({ request }) => {
                 name: 'script_it',
                 type: 'text',
                 properties: {
-                    content: script,
+                    content: body.script,
                 },
             },
         }
-        // console.log('HEYGEN_API_KEY',env.HEYGEN_API_KEY)
+
         const response = await fetch(
             `https://api.heygen.com/v2/template/${template_id}/generate`,
             {
@@ -90,11 +69,8 @@ export const action: ActionFunction = async ({ request }) => {
                 },
                 body: JSON.stringify({
                     caption: true,
-                    // test: true,
                     template_id,
                     title: body.title || 'New Video Title',
-                    // dimension: { width: 405, height: 720 },
-                    // aspect_ratio: null,
                     variables,
                 }),
             },
@@ -105,22 +81,24 @@ export const action: ActionFunction = async ({ request }) => {
         }
 
         const data = await response.json()
-        console.log(data)
-        return json({
+        return {
             ...data?.data,
             id: data.video_id,
             url: data.video_url,
-        })
-    } catch (error) {
-        console.error('Generation error:', error)
-        return json(
-            {
-                error:
-                    error instanceof Error
-                        ? error.message
-                        : 'An unknown error occurred',
-            },
-            { status: 500 },
-        )
-    }
+        }
+    },
+    {
+        body: GenerateRequest,
+        // response: GenerateResponse,
+    },
+)
+
+export type App = typeof app
+
+export const action = async ({ request }: { request: Request }) => {
+    return app.handle(request)
+}
+
+export const loader = async ({ request }: { request: Request }) => {
+    return app.handle(request)
 }
