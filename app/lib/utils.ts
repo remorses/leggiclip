@@ -111,12 +111,15 @@ export async function combineVideos({
         const outputPath = `${outputDir}/output-${Date.now()}.mp4`
 
         // Create a temporary file list
-        const fileList = videoPaths.map(path => `file '${path}'`).join('\n')
+        const fileList = videoPaths.map((path, index) => {
+            // For each input, specify inpoint and outpoint for duration
+            return `file '${path}'\ninpoint 0\noutpoint ${segmentDurationSeconds}`
+        }).join('\n')
         const listPath = `list-${Date.now()}.txt`
         fs.writeFileSync(listPath, fileList)
 
-        // Use concat demuxer which is more reliable for concatenating files
-        const command = `ffmpeg -f concat -safe 0 -i "${listPath}" -c copy "${outputPath}"`
+        // Use concat demuxer with segment duration limits and reencode
+        const command = `ffmpeg -f concat -safe 0 -i "${listPath}" -c:v libx264 -c:a aac "${outputPath}"`
 
         const ffmpeg = spawn(command, { shell: true, stdio: 'inherit' })
 
