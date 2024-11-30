@@ -62,23 +62,25 @@ import Cache from 'lru-cache-fs'
 // Cache for video results with max 100 items and 1 hour TTL
 const videoCache = new Cache<
     string,
-    PexelsVideoResponse & {
-        thumbnailUrl: string
-        bestResultUrl: string
-        filePath: string
-    }
+    GetUnsplashVideoRes
 >({
     max: 100,
 
     cacheName: 'pexels-videos', // Cache directory
 })
 
+type GetUnsplashVideoRes = PexelsVideoResponse & {
+  thumbnailUrl: string
+  bestResultUrl: string
+  filePath: string
+}
+
 export async function getUnsplashVideo(keyword: string) {
     try {
         // Check cache first
         const cached = await videoCache.get(keyword)
         if (cached && fs.existsSync(cached.filePath)) {
-            return cached
+            return cached as GetUnsplashVideoRes
         }
         console.log('Fetching video from Pexels for keyword:', keyword)
 
@@ -245,9 +247,9 @@ export async function getVideosForKeywords({
 
                 return {
                     keyword,
-                    filePath: pexelsResult.filePath,
-                    url: pexelsResult.bestResultUrl,
-                    thumbnailUrl: pexelsResult.thumbnailUrl,
+                    filePath: pexelsResult.filePath!,
+                    url: pexelsResult.bestResultUrl!,
+                    thumbnailUrl: pexelsResult.thumbnailUrl!,
                 }
             } catch (error) {
                 console.error(
