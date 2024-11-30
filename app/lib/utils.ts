@@ -58,10 +58,31 @@ type PexelsVideoResponse = {
     url: string
     videos: Video[]
 }
+import Cache from 'lru-cache-fs'
+// Cache for video results with max 100 items and 1 hour TTL
+const videoCache = new Cache<
+    string,
+    PexelsVideoResponse & {
+        thumbnailUrl: string
+        bestResultUrl: string
+        filePath: string
+    }
+>({
+    max: 100,
+
+    cacheName: 'pexels-videos', // Cache directory
+})
+
 export async function getUnsplashVideo(keyword: string) {
     try {
+        // Check cache first
+        const cached = await videoCache.get(keyword)
+        if (cached && fs.existsSync(cached.filePath)) {
+            return cached
+        }
+
         const response = await fetch(
-            `https://api.pexels.com/v1/videos/search?query=${encodeURIComponent(keyword)}&orientation=portrait&per_page=1`,
+            `https://api.pexels.com/v1/videos/search?query=${encodeURIComponent(keyword)}&orientation=portrait&per_page=20`,
             {
                 headers: {
                     Authorization: env.PEXELS_API_KEY || '',
@@ -76,23 +97,49 @@ export async function getUnsplashVideo(keyword: string) {
         const data: PexelsVideoResponse = await response.json()
 
         // Find best quality HD video with good fps
-        let bestResultUrl = ''
-        let thumbnailUrl = ''
-        if (data.videos?.[0]?.video_files) {
-            thumbnailUrl = data.videos[0].image
-            const hdVideos = data.videos[0].video_files.filter(
-                (file) => file.quality === 'hd' && file.fps >= 10,
-            )
-            if (hdVideos.length > 0) {
-                bestResultUrl = hdVideos[0].link
-            }
+
+        const isHdVideo = (file: VideoFile) =>
+            file.width >= 720 &&
+            file.width <= 1920 &&
+            file.fps >= 10 &&
+            file.fps <= 60 &&
+            file.file_type === 'video/mp4'
+
+        const bestVideo = data.videos.find((video) =>
+            video.video_files?.some(isHdVideo),
+        )
+
+        if (!bestVideo) {
+            return null
+        }
+        let thumbnailUrl = bestVideo.image
+        const hdVideo = bestVideo.video_files.find(isHdVideo)
+
+        let bestResultUrl = hdVideo!.link
+
+        // Download and save the video
+        const videoResponse = await fetch(bestResultUrl)
+        if (!videoResponse.ok) {
+            throw new Error('Failed to download video')
         }
 
-        return {
+        const videoBuffer = Buffer.from(await videoResponse.arrayBuffer())
+        const folderPath = 'downloaded-videos'
+        await fs.promises.mkdir(folderPath, { recursive: true })
+        const filePath = path.join(folderPath, `${keyword}-video.mp4`)
+        await fs.promises.writeFile(filePath, videoBuffer)
+
+        const result = {
             ...data,
             thumbnailUrl,
             bestResultUrl,
+            filePath,
         }
+
+        // Store in cache
+        videoCache.set(keyword, result)
+
+        return result
     } catch (error) {
         console.error('Error fetching Pexels photo:', error)
         return null
@@ -101,7 +148,7 @@ export async function getUnsplashVideo(keyword: string) {
 
 export async function combineVideos({
     videoPaths,
-    segmentDurationSeconds = 3,
+    segmentDurationSeconds = 4,
 }: {
     videoPaths: string[]
     segmentDurationSeconds?: number
@@ -116,8 +163,8 @@ export async function combineVideos({
     const trimPromises = videoPaths.map((videoPath, index) => {
         return new Promise<string>((resolveTrim, rejectTrim) => {
             const trimmedPath = `${tempDir}/trimmed-${index}-${Date.now()}.mp4`
-            // Use -ss before -i for faster seeking and -c copy for stream copying
-            const trimCommand = `ffmpeg -ss 0 -t ${segmentDurationSeconds} -i "${videoPath}" -c copy "${trimmedPath}"`
+            // Add -avoid_negative_ts make_zero to prevent still frames when keyframes don't align
+            const trimCommand = `ffmpeg -ss 0 -t ${segmentDurationSeconds} -i "${videoPath}" -c copy -avoid_negative_ts make_zero "${trimmedPath}"`
 
             const ffmpeg = spawn(trimCommand, {
                 shell: true,
@@ -142,7 +189,7 @@ export async function combineVideos({
 
     // Concatenate trimmed files using stream copy
     return new Promise<{ outputPath: string }>((resolve, reject) => {
-        const concatCommand = `ffmpeg -f concat -safe 0 -i "${listPath}" -c copy "${outputPath}"`
+        const concatCommand = `ffmpeg -f concat -safe 0 -i "${listPath}" -c copy -ignore_editlist 1 "${outputPath}"`
         const ffmpeg = spawn(concatCommand, {
             shell: true,
             stdio: 'inherit',
@@ -186,30 +233,9 @@ export async function getVideosForKeywords({
                     }
                 }
 
-                // Download the video
-                const videoResponse = await fetch(pexelsResult.bestResultUrl)
-                if (!videoResponse.ok) {
-                    console.warn(
-                        `Failed to download video for keyword: ${keyword}`,
-                    )
-                    return {
-                        keyword,
-                        filePath: null,
-                    }
-                }
-
-                // Get video content as buffer
-                const videoBuffer = Buffer.from(
-                    await videoResponse.arrayBuffer(),
-                )
-                // Write video to disk
-                const folderPath = 'downloaded-videos'
-                await fs.promises.mkdir(folderPath, { recursive: true })
-                const filePath = path.join(folderPath, `${keyword}-video.mp4`)
-                await fs.promises.writeFile(filePath, videoBuffer)
                 return {
                     keyword,
-                    filePath,
+                    filePath: pexelsResult.filePath,
                     url: pexelsResult.bestResultUrl,
                     thumbnailUrl: pexelsResult.thumbnailUrl,
                 }
