@@ -80,6 +80,7 @@ export async function getUnsplashVideo(keyword: string) {
         if (cached && fs.existsSync(cached.filePath)) {
             return cached
         }
+        console.log('Fetching video from Pexels for keyword:', keyword)
 
         const response = await fetch(
             `https://api.pexels.com/v1/videos/search?query=${encodeURIComponent(keyword)}&orientation=portrait&per_page=20`,
@@ -106,6 +107,8 @@ export async function getUnsplashVideo(keyword: string) {
             file.file_type === 'video/mp4'
 
         const bestVideo = data.videos.find((video) =>
+            video.duration >= 4 &&
+            video.duration <= 30 &&
             video.video_files?.some(isHdVideo),
         )
 
@@ -116,6 +119,7 @@ export async function getUnsplashVideo(keyword: string) {
         const hdVideo = bestVideo.video_files.find(isHdVideo)
 
         let bestResultUrl = hdVideo!.link
+        console.log('Fetching video from URL:', bestResultUrl)
 
         // Download and save the video
         const videoResponse = await fetch(bestResultUrl)
@@ -138,6 +142,7 @@ export async function getUnsplashVideo(keyword: string) {
 
         // Store in cache
         videoCache.set(keyword, result)
+        videoCache.fsDump()
 
         return result
     } catch (error) {
@@ -164,7 +169,7 @@ export async function combineVideos({
         return new Promise<string>((resolveTrim, rejectTrim) => {
             const trimmedPath = `${tempDir}/trimmed-${index}-${Date.now()}.mp4`
             // Add -avoid_negative_ts make_zero to prevent still frames when keyframes don't align
-            const trimCommand = `ffmpeg -ss 0 -t ${segmentDurationSeconds} -i "${videoPath}" -c copy -avoid_negative_ts make_zero "${trimmedPath}"`
+            const trimCommand = `ffmpeg -ss 0 -t ${segmentDurationSeconds + 7} -i "${videoPath}" -c copy -avoid_negative_ts make_zero "${trimmedPath}"`
 
             const ffmpeg = spawn(trimCommand, {
                 shell: true,
@@ -183,13 +188,18 @@ export async function combineVideos({
 
     // After all trims are complete, concatenate the trimmed files
     const trimmedPaths = await Promise.all(trimPromises)
-    const fileList = trimmedPaths.map((path) => `file '${path}'`).join('\n')
+    const fileList = trimmedPaths
+        .map(
+            (path) =>
+                `file '${path}'\ninpoint 0\noutpoint ${segmentDurationSeconds}`,
+        )
+        .join('\n')
     const listPath = `list-${Date.now()}.txt`
     fs.writeFileSync(listPath, fileList)
 
     // Concatenate trimmed files using stream copy
     return new Promise<{ outputPath: string }>((resolve, reject) => {
-        const concatCommand = `ffmpeg -f concat -safe 0 -i "${listPath}" -c copy -ignore_editlist 1 "${outputPath}"`
+        const concatCommand = `ffmpeg -f concat -safe 0 -i "${listPath}" -c:v libx264 -preset medium -crf 23 -c:a aac -b:a 128k "${outputPath}"`
         const ffmpeg = spawn(concatCommand, {
             shell: true,
             stdio: 'inherit',
