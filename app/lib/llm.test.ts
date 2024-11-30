@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { generateTikTokScript } from './llm'
+import { generateTikTokScripts } from './llm'
 
 describe('generateTikTokScript', () => {
     it('generates TikTok script from law text', async () => {
@@ -12,7 +12,7 @@ describe('generateTikTokScript', () => {
             (3) The driver shall decrease speed when approaching intersections, railroad crossings, curves, or hazardous conditions.
         `
 
-        const result = await generateTikTokScript({
+        const result = await generateTikTokScripts({
             lawText,
             description: 'Explain speed limit laws in a fun way',
         })

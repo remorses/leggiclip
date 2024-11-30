@@ -1,6 +1,7 @@
 import { Spiceflow } from 'spiceflow'
 import { z } from 'zod'
 import { env } from '~/lib/env'
+import { generateTikTokScripts } from '~/lib/llm'
 
 const GenerateRequest = z.object({
     pdfText: z.string(),
@@ -28,9 +29,36 @@ export const app = new Spiceflow({ basePath: '/api' }).post(
         const body = await request.json()
 
         const numVideos = 1
+        const scriptsStream = await generateTikTokScripts({
+            lawText: body.pdfText,
+            description: body.description,
+            numItems: numVideos,
+        })
 
-        
+        type Item = ArrayItem<ExtractGeneratorType<typeof scriptsStream>> & {
+            bgUrl?: string
+            videos?: string[]
+        }
+        let items: Item[] = []
+        for await (const scripts of scriptsStream) {
+            items = scripts
+            yield { videoScripts: items }
+        }
 
+        // Generate all videos in parallel
+        const videos = await Promise.all(
+            items.map((item) =>
+                generateVideo({
+                    title: item.title,
+                    script: item.script,
+                    bgUrl: item.bgUrl,
+                }),
+            ),
+        )
+        yield { videos }
+
+        // Return final state with generated videos
+        return { videoScripts: items, videos }
     },
     {
         body: GenerateRequest,
@@ -41,12 +69,12 @@ export const app = new Spiceflow({ basePath: '/api' }).post(
 async function generateVideo({
     title,
     script,
-    keywords,
+
     bgUrl = 'https://files2.heygen.ai/prod/movio/preset/image/origin/28e0c75a51624ee89d3c4a1eb044ef2c.jpg',
 }: {
     title?: string
     script: string
-    keywords?: string[]
+    // keywords?: string[]
     bgUrl?: string
 }) {
     const template_id = '3d88fbeeccd84c1193d4009bf11eb5f1'
@@ -116,3 +144,7 @@ export const action = async ({ request }: { request: Request }) => {
 export const loader = async ({ request }: { request: Request }) => {
     return app.handle(request)
 }
+
+type ExtractGeneratorType<T> = T extends AsyncGenerator<infer U> ? U : never
+
+type ArrayItem<T> = T extends (infer U)[] ? U : never

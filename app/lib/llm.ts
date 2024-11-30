@@ -1,4 +1,4 @@
-import { generateText } from 'ai'
+import { generateText, streamText } from 'ai'
 import { createOpenAI } from '@ai-sdk/openai'
 import { extractTagsArrays } from './xml'
 
@@ -6,7 +6,7 @@ const openai = createOpenAI({
     apiKey: process.env.OPENAI_KEY,
 })
 
-export async function generateTikTokScript({
+export async function* generateTikTokScripts({
     lawText,
     description,
     numItems = 1,
@@ -49,24 +49,45 @@ Stay safe out there besties! Don't forget to follow for more legal tips that cou
 <keywords>influencer talking to camera, traffic safety studies chart, residential street with houses, highway traffic flowing, dangerous curve road sign, stormy weather driving, police officer giving ticket, social media follow button</keywords>
 <title>5 Speed Limit Facts That Could Save Your Life! 🚗💨</title>`
 
-    const { text } = await generateText({
+    let items: Array<{
+        title: string
+        keywords: string[]
+        script: string
+    }> = []
+
+    const stream = streamText({
         model: openai('gpt-4o'),
         system: 'You are a charismatic TikTok influencer who explains laws in a fun and engaging way.',
         prompt,
     })
+    let lastYieldTime = 0
+    for await (const chunk of stream.textStream) {
+        const now = Date.now()
+        if (now - lastYieldTime < 1000) continue
 
-    console.log('Generated TikTok scripts:', text)
-    const result = extractTagsArrays({
-        xml: text,
-        tags: ['title', 'keywords', 'video_script'],
-    })
+        const result = extractTagsArrays({
+            xml: chunk,
+            tags: ['title', 'keywords', 'video_script'],
+        })
 
-    // Create an array of items, matching up corresponding elements from each array
-    const items = result.title.map((title, i) => ({
-        title,
-        keywords: result.keywords[i].split(',').map((k) => k.trim()),
-        script: result.video_script[i],
-    }))
+        // Update items with any new complete sets
+        const newItems = result.title.map((title, i) => ({
+            title,
+            keywords:
+                result.keywords[i]?.split(',').map((k) => k.trim()) || [],
+            script: result.video_script[i] || '',
+        }))
 
-    return items
+        items = newItems
+
+        // Yield current state of items at most once per second
+
+        yield items
+        lastYieldTime = now
+    }
+
+    // Make sure to yield final state
+    yield items
+
+    // return items
 }
