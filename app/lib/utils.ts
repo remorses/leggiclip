@@ -153,7 +153,7 @@ export async function getUnsplashVideo(keyword: string) {
 
 export async function combineVideos({
     videoPaths,
-    segmentDurationSeconds = 4,
+    segmentDurationSeconds = 3,
 }: {
     videoPaths: string[]
     segmentDurationSeconds?: number
