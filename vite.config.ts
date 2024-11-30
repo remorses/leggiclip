@@ -10,5 +10,11 @@ export default defineConfig({
       plugins: [tailwindcss, autoprefixer],
     },
   },
+
   plugins: [reactRouter(), tsconfigPaths()],
+  resolve: {
+    alias: {
+      "@remix-run/react": "react-router"
+    }
+  }
 });
