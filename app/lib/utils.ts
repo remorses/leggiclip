@@ -60,19 +60,16 @@ type PexelsVideoResponse = {
 }
 import Cache from 'lru-cache-fs'
 // Cache for video results with max 100 items and 1 hour TTL
-const videoCache = new Cache<
-    string,
-    GetUnsplashVideoRes
->({
+const videoCache = new Cache<string, GetUnsplashVideoRes>({
     max: 100,
 
     cacheName: 'pexels-videos', // Cache directory
 })
 
 type GetUnsplashVideoRes = PexelsVideoResponse & {
-  thumbnailUrl: string
-  bestResultUrl: string
-  filePath: string
+    thumbnailUrl: string
+    bestResultUrl: string
+    filePath: string
 }
 
 export async function getUnsplashVideo(keyword: string) {
@@ -108,10 +105,11 @@ export async function getUnsplashVideo(keyword: string) {
             file.fps <= 60 &&
             file.file_type === 'video/mp4'
 
-        const bestVideo = data.videos.find((video) =>
-            video.duration >= 4 &&
-            video.duration <= 30 &&
-            video.video_files?.some(isHdVideo),
+        const bestVideo = data.videos.find(
+            (video) =>
+                video.duration >= 4 &&
+                video.duration <= 30 &&
+                video.video_files?.some(isHdVideo),
         )
 
         if (!bestVideo) {
@@ -166,12 +164,12 @@ export async function combineVideos({
     fs.mkdirSync(tempDir, { recursive: true })
     const outputPath = `${outputDir}/output-${Date.now()}.mp4`
 
-    // First, trim each video using stream copy
+    // First, trim each video and reencode
     const trimPromises = videoPaths.map((videoPath, index) => {
         return new Promise<string>((resolveTrim, rejectTrim) => {
             const trimmedPath = `${tempDir}/trimmed-${index}-${Date.now()}.mp4`
-            // Add -avoid_negative_ts make_zero to prevent still frames when keyframes don't align
-            const trimCommand = `ffmpeg -ss 0 -t ${segmentDurationSeconds + 7} -i "${videoPath}" -c copy -avoid_negative_ts make_zero "${trimmedPath}"`
+            // Reencode during trim to ensure consistent format
+            const trimCommand = `ffmpeg -ss 0 -t ${segmentDurationSeconds} -i "${videoPath}" -c:v libx264 -preset medium -crf 23 -c:a aac -b:a 128k "${trimmedPath}"`
 
             const ffmpeg = spawn(trimCommand, {
                 shell: true,
@@ -190,18 +188,13 @@ export async function combineVideos({
 
     // After all trims are complete, concatenate the trimmed files
     const trimmedPaths = await Promise.all(trimPromises)
-    const fileList = trimmedPaths
-        .map(
-            (path) =>
-                `file '${path}'\ninpoint 0\noutpoint ${segmentDurationSeconds}`,
-        )
-        .join('\n')
+    const fileList = trimmedPaths.map((path) => `file '${path}'`).join('\n')
     const listPath = `list-${Date.now()}.txt`
     fs.writeFileSync(listPath, fileList)
 
-    // Concatenate trimmed files using stream copy
+    // Concatenate trimmed files using stream copy since they're already in the right format
     return new Promise<{ outputPath: string }>((resolve, reject) => {
-        const concatCommand = `ffmpeg -f concat -safe 0 -i "${listPath}" -c:v libx264 -preset medium -crf 23 -c:a aac -b:a 128k "${outputPath}"`
+        const concatCommand = `ffmpeg -f concat -safe 0 -i "${listPath}" -c copy "${outputPath}"`
         const ffmpeg = spawn(concatCommand, {
             shell: true,
             stdio: 'inherit',
