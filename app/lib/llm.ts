@@ -10,10 +10,11 @@ import {
     getVideosForKeywords,
     isTruthy,
     sleep,
-    truncateText,
+    
     uploadVideoFile,
 } from '~/lib/utils'
 import { generateTikTokScripts } from '~/lib/script'
+import { truncateText } from '~/lib/browser-utils'
 
 export const GenerateRequest = z.object({
     pdfText: z.string(),

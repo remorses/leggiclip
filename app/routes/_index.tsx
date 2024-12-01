@@ -12,7 +12,7 @@ export function meta() {
 }
 
 import { ActionFunction } from 'react-router'
-import { truncateText } from '~/lib/utils'
+import { truncateText } from '~/lib/browser-utils'
 
 
 export const clientAction: ActionFunction = async ({ request }) => {
@@ -49,15 +49,27 @@ export default function Home() {
 
     return (
         <div className='min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8'>
+            <header className="fixed top-0 left-0 right-0 z-50">
+                <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+                    <div className="flex justify-between h-20 items-center">
+                        <div className="flex-shrink-0">
+                            <h1 className="text-2xl font-bold text-gray-900">LeggiClip</h1>
+                        </div>
+                        <div>
+                            <a href="/generate" className="text-gray-600 hover:text-gray-900">Previous Generations</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
             <div className='text-center -mt-[20%]'>
                 <h1 className='text-3xl font-bold text-gray-900 mb-8'>
-                    Generate AI Videos
+                    Video di Divulgazione con AI
                 </h1>
                 <div className='max-w-xl mx-auto text-center'>
                     <p className='text-lg text-gray-500 mb-8'>
-                        Transform complex content into engaging videos. Break
-                        down lengthy material into digestible, shareable
-                        content.
+                        Trasforma contenuti complessi in video educativi. Rendi
+                        semplici e accessibili argomenti difficili attraverso
+                        contenuti coinvolgenti.
                     </p>
                 </div>
             </div>
@@ -108,7 +120,7 @@ export default function Home() {
                                         name='numVideos'
                                         min='1'
                                         max='10'
-                                        defaultValue='1'
+                                        defaultValue='3'
                                         className='w-20 rounded-full px-3 py-2 text-sm text-gray-900 focus:ring-indigo-500 focus:outline-none bg-gray-100 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
                                     />
                                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">
