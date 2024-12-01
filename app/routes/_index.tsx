@@ -13,13 +13,38 @@ export function meta() {
 
 import { ActionFunction } from 'react-router'
 
+function truncateText(text: string, maxChars: number = 4000): string {
+    if (text.length <= maxChars) {
+        return text
+    }
+
+    // Take first maxChars characters, trying to break at a sentence
+    let truncated = text.slice(0, maxChars)
+    
+    // Try to break at last sentence boundary
+    const lastPeriod = truncated.lastIndexOf('.')
+    if (lastPeriod > maxChars * 0.8) { // Only break at sentence if we don't lose too much text
+        truncated = truncated.slice(0, lastPeriod + 1)
+    }
+
+    return truncated.trim()
+}
+
+
+
 export const clientAction: ActionFunction = async ({ request }) => {
     const formData = await request.formData()
     const description = formData.get('description') as string
     const avatar = formData.get('avatar') as string
     const pdf = formData.get('pdf') as File
+    // Read the PDF file content // TODO if of type pdf convert via ocr first
+    const pdfText = truncateText(await pdf.text())
 
-    if (!description || !avatar) {
+    // Store in localStorage for later use
+
+    localStorage.setItem('pdfText', pdfText)
+
+    if (!description) {
         return { error: 'Description, avatar and PDF file are required' }
     }
 
@@ -46,8 +71,9 @@ export default function Home() {
                 </h1>
                 <div className='max-w-xl mx-auto text-center'>
                     <p className='text-lg text-gray-500 mb-8'>
-                        Transform complex content into engaging videos. Our AI breaks down
-                        lengthy material into digestible, shareable content.
+                        Transform complex content into engaging videos. Break
+                        down lengthy material into digestible, shareable
+                        content.
                     </p>
                 </div>
             </div>
@@ -95,7 +121,7 @@ export default function Home() {
                                     type='file'
                                     id='pdf'
                                     name='pdf'
-                                    accept='.pdf'
+                                    accept='.pdf,.txt'
                                     className='text-sm text-gray-500
                                         file:mr-4 file:py-2 file:px-4
                                         file:rounded-full file:border-0
@@ -114,6 +140,11 @@ export default function Home() {
                         </div>
                     </motion.div>
                 </div>
+                {actionData?.error && (
+                    <div className='mt-4 text-red-600 text-sm'>
+                        {actionData.error}
+                    </div>
+                )}
             </Form>
         </div>
     )

@@ -8,7 +8,7 @@ export const app = new Spiceflow({ basePath: '/api' }).post(
     async function* ({ request: req }) {
         const body = await req.json()
 
-        yield* await generateVideosHandler(body)
+        yield* await generateVideosHandler(body, req.signal)
     },
     {
         body: GenerateRequest,

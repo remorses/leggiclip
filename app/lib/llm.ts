@@ -20,11 +20,14 @@ export const GenerateRequest = z.object({
     avatar: z.string(),
     numItems: z.number().optional(),
 })
-
 export async function* generateVideosHandler(
     body: z.infer<typeof GenerateRequest>,
+    signal?: AbortSignal,
 ) {
     const numVideos = 1
+    
+    if (signal?.aborted) return
+    
     const scriptsStream = await generateTikTokScripts({
         lawText: body.pdfText || defaultLawText,
         description: body.description,
@@ -33,12 +36,14 @@ export async function* generateVideosHandler(
 
     let videos: VideoItem[] = []
     for await (const scripts of scriptsStream) {
+        if (signal?.aborted) return
         videos = scripts
         yield { videos: videos }
     }
 
     // Get background videos for each item's keywords
     for (const item of videos) {
+        if (signal?.aborted) return
         const result = await getVideosForKeywords({
             keywords: item.keywords,
         })
@@ -50,6 +55,7 @@ export async function* generateVideosHandler(
 
     // Get background videos for each item's keywords
     for (const item of videos) {
+        if (signal?.aborted) return
         const res = await combineVideos({
             videoPaths: item
                 .bgVideos!.map((video) => video!.filePath!)
@@ -70,9 +76,8 @@ export async function* generateVideosHandler(
     }
 
     // Generate all videos in parallel
-    // return
-
     for (const item of videos) {
+        if (signal?.aborted) return
         const video = await generateVideo({
             title: item.title,
             script: item.script,
@@ -83,6 +88,7 @@ export async function* generateVideosHandler(
     }
 
     while (videos.some((item) => !item.url)) {
+        if (signal?.aborted) return
         await sleep(1000 * 5)
 
         await Promise.all(
@@ -100,8 +106,6 @@ export async function* generateVideosHandler(
         yield { videos }
     }
     yield { videos }
-
-    // Return final state with generated videos
 }
 
 export async function getVideoStatus(videoId: string) {

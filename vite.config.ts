@@ -19,4 +19,5 @@ export default defineConfig({
             '@remix-run/react': 'react-router',
         },
     },
+    clearScreen: false
 })

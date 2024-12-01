@@ -159,7 +159,7 @@ export async function combineVideos({
     segmentDurationSeconds?: number
 }): Promise<{ outputPath: string }> {
     const outputDir = 'output-videos'
-    const tempDir = 'temp-videos'
+    const tempDir = `temp-videos-${Date.now()}`
     fs.mkdirSync(outputDir, { recursive: true })
     fs.mkdirSync(tempDir, { recursive: true })
     const outputPath = `${outputDir}/output-${Date.now()}.mp4`
@@ -214,31 +214,37 @@ export async function combineVideos({
                     console.error('Error deleting trimmed file:', error)
                 }
             })
-            fs.rmdirSync(tempDir, { recursive: true })
+            try {
+                fs.rmdirSync(tempDir, { recursive: true })
+            } catch (error) {
+                console.error('Error deleting temp directory:', error)
+            }
 
             if (code === 0) resolve({ outputPath })
             else reject(new Error(`Concat process exited with code ${code}`))
         })
 
-        ffmpeg.on('error', (error) => {
-            // Clean up on error
-            try {
-                fs.unlinkSync(listPath)
-            } catch (error) {
-                console.error('Error deleting list file:', error)
-            }
-            trimmedPaths.forEach((path) => {
-                try {
-                    fs.unlinkSync(path)
-                } catch (error) {
-                    console.error('Error deleting trimmed file:', error) 
-                }
-            })
-            fs.rmdirSync(tempDir, { recursive: true })
-            reject(error)
-        })
+        // ffmpeg.on('error', (error) => {
+        //     // Clean up on error
+        //     try {
+        //         fs.unlinkSync(listPath)
+        //     } catch (error) {
+        //         console.error('Error deleting list file:', error)
+        //     }
+        //     trimmedPaths.forEach((path) => {
+        //         try {
+        //             fs.unlinkSync(path)
+        //         } catch (error) {
+        //             console.error('Error deleting trimmed file:', error) 
+        //         }
+        //     })
+        //     fs.rmdirSync(tempDir, { recursive: true })
+        //     reject(error)
+        // })
     })
 }
+
+
 
 export async function getVideosForKeywords({
     keywords,

@@ -19,7 +19,7 @@ function PlayButton() {
     )
 }
 
-let testMode = false
+let testMode = true
 
 export default function Generate() {
     const [searchParams] = useSearchParams()
@@ -29,15 +29,19 @@ export default function Generate() {
     }>({})
     const description = searchParams.get('description') || ''
     const avatar = searchParams.get('avatar') || ''
-    const pdfText = searchParams.get('pdfText') || ''
 
     useEffect(() => {
         if (testMode) {
             // setVideos(testVideos)
             return
         }
-        if (!description || !pdfText) {
-            return
+        const pdfText = localStorage.getItem('pdfText') || ''
+
+        if (!description) {
+            throw new Error('Missing description')
+        }
+        if (!pdfText) {
+            throw new Error('Missing PDF text')
         }
         async function fetchVideos() {
             try {
@@ -64,16 +68,7 @@ export default function Generate() {
     return (
         <div className='p-4'>
             <Masonry columns={{ 640: 1, 768: 2, 1024: 3 }} gap={24}>
-                <div className='relative rounded-xl overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 p-8 min-h-[400px] flex flex-col items-center justify-center text-center'>
-                    <h2 className='text-2xl font-bold text-gray-800 mb-4'>
-                        Your Videos Will Appear Here
-                    </h2>
-                    <p className='text-gray-600 mb-6'>
-                        We're processing your request and generating
-                        personalized videos based on your input. This may take a
-                        few moments.
-                    </p>
-                </div>
+                <IntroBox />
                 {videos.length === 0
                     ? // Show initial message card
 
@@ -172,13 +167,7 @@ export default function Generate() {
                               </div>
                           </div>
                       ))}
-                <div className='relative rounded-xl overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 p-8 min-h-[400px] flex flex-col items-center justify-center text-center'>
-                    <div className='animate-pulse space-y-4 w-full max-w-sm'>
-                        <div className='h-2 bg-blue-200 rounded w-3/4 mx-auto'></div>
-                        <div className='h-2 bg-blue-200 rounded w-1/2 mx-auto'></div>
-                        <div className='h-2 bg-blue-200 rounded w-2/3 mx-auto'></div>
-                    </div>
-                </div>
+                {/* <LoadingBox /> */}
                 {[...Array(6)].map((_, i) => (
                     <VideoSkeleton key={i} />
                 ))}
@@ -206,6 +195,47 @@ function VideoSkeleton({ children }: { children?: React.ReactNode }) {
         </div>
     )
 }
+
+function IntroBox() {
+    return (
+        <div className='relative rounded-xl overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 p-8 min-h-[360px] flex flex-col items-center justify-center text-center'>
+            <h2 className='text-2xl font-bold text-gray-800 mb-4'>
+                Your Videos Will Appear Here
+            </h2>
+            <p className='text-gray-600 mb-6'>
+                We're processing your request and generating
+                personalized videos based on your input. This may take a
+                few moments.
+            </p>
+        </div>
+    )
+}
+
+
+function ProgressBox() {
+    return (
+        <div className="p-6 mb-8 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Video Generation in Progress
+            </h2>
+            <p className="text-gray-600">
+                Your videos are being generated. This process may take a few minutes. You'll see the videos appear below as they're completed.
+            </p>
+            <div className="mt-4 flex gap-2 flex-wrap">
+                <div className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
+                    <span className="mr-2">●</span> Processing videos
+                </div>
+                <div className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
+                    <span className="mr-2">✓</span> Generating scripts
+                </div>
+                <div className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800">
+                    <span className="mr-2">⟳</span> Finding background footage
+                </div>
+            </div>
+        </div>
+    )
+}
+
 
 export const testVideos: VideoItem[] = [
     {
