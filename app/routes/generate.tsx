@@ -7,7 +7,7 @@ import Masonry from 'react-layout-masonry'
 
 function PlayButton() {
     return (
-        <div className='absolute inset-0 flex items-center justify-center'>
+        <div className='absolute pointer-events-none inset-0 flex items-center justify-center'>
             <svg
                 className='w-20 h-20 text-white'
                 fill='currentColor'
@@ -129,7 +129,7 @@ export default function Generate() {
                               )}
 
                               {!playingVideos[i] && (
-                                  <div className='absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-xl p-4 space-y-3 shadow-lg'>
+                                  <div className='absolute pointer-events-none bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-xl p-4 space-y-3 shadow-lg'>
                                       <h3 className='font-medium truncate'>
                                           {video.title}
                                       </h3>
