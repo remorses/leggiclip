@@ -167,9 +167,7 @@ export function Generate() {
                     console.log('Generated videos:', data)
                     setVideos(
                         deduplicateById(
-                            [...data.videos, ...testVideos].sort(
-                                sortVideosByDate,
-                            ),
+                            [...data.videos, ...videos].sort(sortVideosByDate),
                         ),
                     )
                 }

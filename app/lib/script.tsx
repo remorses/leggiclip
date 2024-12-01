@@ -42,31 +42,29 @@ For each video, structure the content like this:
 - Analysis: Explain the underlying legal principles
 - Application: Demonstrate practical legal reasoning
 
-write all the outputs (including title) in italian
+write all the outputs (including title) in Italian
+
+Avoid markdown output - use only punctuation and line breaks for pacing. For acronyms use trattino to separate letters, for example "a-i" for "AI". "a-vu-doppia-esse" for "AWS". 
+For numbers write them in words, for example "uno" for "1", "due" for "2", "tre" for "3".
 
 Then, provide exactly ${numItems} sets of responses in XML format, each containing:
+<title>Una domanda stimolante sulle implicazioni di questa legge</title>
 <output_language>italian</output_language>
 <video_script>Analisi dettagliata di UN aspetto legale complesso in 30 secondi</video_script>
 <keywords>At least 8 comma-separated search terms for background footage that matches the script timeline</keywords>
-<title>Una domanda stimolante sulle implicazioni di questa legge</title>
 
 Example output:
+<title>Quali farmaci comuni possono risultare positivi ai test antidroga durante la guida?</title>
 <output_language>italian</output_language>
-<video_script>Quali farmaci comuni possono risultare positivi ai test antidroga durante la guida?
+<video_script>
+Quali farmaci comuni possono risultare positivi ai test antidroga durante la guida?
 
-Un problema serio che riguarda molti medicinali da banco:
-- Antistaminici che causano sonnolenza
-- Decongestionanti con pseudoefedrina
-- Alcuni sciroppi per la tosse
+Lo sapevi che alcuni farmaci comuni possono farti risultare positivo al test antidroga durante i controlli stradali? Sì, anche gli antistaminici e gli sciroppi per la tosse possono dare falsi positivi!
 
-La legge richiede massima attenzione:
-- Verificare sempre le avvertenze
-- Non guidare se il farmaco compromette la lucidità
-- Consultare il medico per alternative sicure
-
-Ricorda: la sicurezza stradale è una responsabilità di tutti.</video_script>
+Ecco le informazioni chiave: leggere le avvertenze sui medicinali, valutare gli effetti sulla guida e considerare alternative con il proprio medico curante.
+</video_script>
 <keywords>pharmacy, medicine bottles, driving test, police control, drowsy driver, warning labels, doctor consultation, traffic safety</keywords>
-<title>Farmaci da Banco e Guida: Rischi Nascosti nei Test Antidroga</title>`
+`
 
     let items: Array<{
         language: string

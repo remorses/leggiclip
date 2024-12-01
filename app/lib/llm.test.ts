@@ -78,7 +78,7 @@ describe('generateVideosHandler', () => {
 })
 
 describe(
-    'generateTikTokScript',
+    'generateTikTokScripts',
     () => {
         it('generates TikTok script from law text', async () => {
             const lawText = `
@@ -104,64 +104,44 @@ describe(
             expect(lastData).toMatchInlineSnapshot(`
               [
                 {
+                  "createdAt": 1733059052.277,
                   "keywords": [
-                    "neighborhood drive",
-                    "speed limit sign",
-                    "pedestrian safety",
-                    "child crossing street",
-                    "cyclist on road",
-                    "community safety",
-                    "responsible driving",
                     "residential area",
-                    "safe driving tips",
-                    "neighborhood watch",
+                    "speed limit",
+                    "children playing",
+                    "safe driving",
+                    "weather conditions",
+                    "neighborhood",
+                    "traffic signs",
+                    "road safety",
                   ],
-                  "script": "Imagine cruising through a quiet neighborhood, feeling the breeze. Suddenly, a speed limit sign reads 25 mph.
+                  "language": "italian",
+                  "script": "Qual è la velocità giusta in una zona residenziale?
 
-              This isn't just a suggestion; it's a legal requirement to keep everyone safe.
+              Immagina di guidare in un quartiere tranquillo. Qual è la velocità giusta? La legge dice venticinque miglia all'ora, ma c'è di più!
 
-              Here's how to adapt:
-              - Business and residential areas have more pedestrians
-              - Lower speeds give you more reaction time
-              - It's about protecting kids, pets, and cyclists
-
-              Key takeaways:
-              - Slower speeds reduce accident severity
-              - They enhance community safety
-              - They ensure you're a responsible driver
-
-              By respecting these limits, you contribute to a safer, more pleasant neighborhood for everyone.",
-                  "title": "Neighborhood Speed Limits: Safety First!",
+              La velocità deve essere ragionevole e prudente. Se ci sono bambini che giocano o condizioni meteo avverse, rallenta ancora di più. La sicurezza prima di tutto!",
+                  "title": "Qual è la velocità giusta in una zona residenziale?",
                 },
                 {
+                  "createdAt": 1733059052.277,
                   "keywords": [
-                    "highway driving",
-                    "speedometer close-up",
-                    "traffic flow",
-                    "stopping distance demonstration",
+                    "intersection",
+                    "curve",
+                    "speed reduction",
+                    "hazardous conditions",
+                    "driving safety",
+                    "traffic rules",
+                    "cautious driving",
                     "accident prevention",
-                    "highway safety",
-                    "smooth traffic",
-                    "responsible driving",
-                    "road safety tips",
-                    "community impact",
                   ],
-                  "script": "Picture yourself on a wide-open highway, the speedometer creeping up to 55 mph.
+                  "language": "italian",
+                  "script": "Come adattare la velocità in situazioni pericolose?
 
-              The law sets this limit for a reason, even when the road seems clear.
+              Stai guidando e ti avvicini a un incrocio o una curva. Cosa fai? La legge dice di ridurre la velocità. Ma perché?
 
-              Here's why it matters:
-              - Faster speeds increase stopping distance
-              - They reduce reaction time
-              - They can lead to severe accidents
-
-              Remember these benefits:
-              - Following limits prevents fines and accidents
-              - It ensures smoother traffic flow
-              - It keeps everyone on the road safer
-
-              By sticking to these limits, you help create a safer driving environment for all.",
-                  "title": "Highway Speed Limits: Safety in Motion",
+              È una questione di sicurezza. Le condizioni pericolose richiedono attenzione extra. Ridurre la velocità ti dà più tempo per reagire e prevenire incidenti. Guida con prudenza!",
+                  "title": "Come adattare la velocità in situazioni pericolose?",
                 },
               ]
             `)
