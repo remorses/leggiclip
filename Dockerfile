@@ -1,26 +1,17 @@
-FROM node:22-alpine AS dependencies-env
-RUN npm i -g pnpm
-COPY . /app
+FROM --platform=linux/amd64 node:22-slim
 
-FROM dependencies-env AS development-dependencies-env
-COPY ./package.json pnpm-lock.yaml /app/
 WORKDIR /app
-RUN pnpm i --frozen-lockfile
 
-FROM dependencies-env AS production-dependencies-env
-COPY ./package.json pnpm-lock.yaml /app/
-WORKDIR /app
-RUN pnpm i --prod --frozen-lockfile
+COPY docker.package.json ./package.json
 
-FROM dependencies-env AS build-env
-COPY ./package.json pnpm-lock.yaml /app/
-COPY --from=development-dependencies-env /app/node_modules /app/node_modules
-WORKDIR /app
-RUN pnpm build
+RUN npm install -g remix-serve-but-not-shit@0.0.6 && npm install
 
-FROM dependencies-env
-COPY ./package.json pnpm-lock.yaml /app/
-COPY --from=production-dependencies-env /app/node_modules /app/node_modules
-COPY --from=build-env /app/build /app/build
-WORKDIR /app
-CMD ["pnpm", "start"]
+COPY ./build /app/build
+
+env PORT=8040
+
+EXPOSE $PORT
+
+
+
+CMD ["remix-serve-but-not-shit", "./build/server/index.js"]
