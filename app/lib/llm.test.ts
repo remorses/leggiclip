@@ -8,41 +8,51 @@ import fs from 'fs'
 describe('uploadFile', () => {
     it('uploads a file and returns URL', async () => {
         // Create a simple test buffer
-        const testContent = await fs.promises.readFile('downloaded-videos/cars-video.mp4')
+        const testContent = await fs.promises.readFile(
+            'downloaded-videos/cars-video.mp4',
+        )
         const filename = `test-${Date.now()}.mp4`
 
         const url = await uploadVideoFile({
             content: testContent,
-            filename: filename
+            filename: filename,
         })
 
         expect(url).toBeTruthy()
         expect(typeof url).toBe('string')
         expect(url).toMatch(/^https:\/\//)
-        
+
         console.log('Upload URL:', url)
     })
 })
-
-
 describe('generateVideo heygen', () => {
     it('generates a video with the provided script and background', async () => {
         const result = await generateVideo({
-            title: 'Speed Limit Laws: Keeping Our Roads Safe',
-            script: 'Sai qual è il limite di alcol nel sangue per guidare in Italia? È 0,5 grammi per litro. Superarlo è un reato grave con multe e sospensione della patente. Se bevi, non guidare - chiama un taxi.',
+            title: 'Limiti di Velocità in Autostrada: Cosa Devi Sapere',
+            script: `Quali sono i veri rischi del superamento dei limiti in autostrada?
+
+Un'analisi delle conseguenze più serie:
+- Aumento esponenziale dello spazio di frenata
+- Riduzione del tempo di reazione disponibile
+- Maggiore consumo di carburante
+
+La legge stabilisce regole precise:
+- 130 km/h il limite massimo in condizioni ottimali
+- 110 km/h con pioggia o neve
+- 90 km/h per i neopatentati
+
+Ricorda: i limiti esistono per proteggere tutti gli utenti della strada.`,
 
             bgUrl: 'https://bh6ssk0uvzevsisn.public.blob.vercel-storage.com/combined-1733009490338-LvLjPy0cLkzr36Sf2T0ODJTyJLskl7.mp4',
         })
         console.log('result:', result)
 
         expect(result).toHaveProperty('video_id')
-        // expect(result).toHaveProperty('status')
+        // expect(result).toHaveProperty('status') 
         expect(typeof result.video_id).toBe('string')
         // expect(typeof result.status).toBe('string')
     })
-
 })
-
 
 describe('generateVideosHandler', () => {
     it(

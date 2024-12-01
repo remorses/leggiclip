@@ -22,46 +22,51 @@ Law text:
 ${lawText}
 </law_text>
 
-Let's first understand this law deeply:
-- What is the core purpose of this law?
-- Who does this law affect directly and indirectly?
-- What are the key obligations or rights it establishes?
-- What are the consequences of non-compliance?
-- What common situations does this law address?
+Let's first analyze the law's deeper implications:
+- What are the less obvious but important aspects of this law?
+- What subtle legal principles underpin this legislation?
+- What complex interactions exist with other laws?
+- What are the nuanced edge cases and exceptions?
+- What sophisticated legal questions arise in practice?
 
-Now, let's identify the most compelling questions about this specific law:
-- What aspects of this law surprise or confuse people?
-- Which parts have the most direct impact on daily life?
-- What are the most common violations people make unknowingly?
-- What rights do people not know they have under this law?
-- What misconceptions exist about this specific legislation?
+Now, let's identify intellectually engaging questions:
+- What legal paradoxes or complexities emerge from this law?
+- Which aspects challenge conventional legal interpretation?
+- What sophisticated legal principles are often misunderstood?
+- How does this law adapt to evolving societal changes?
+- What technical or procedural details deserve attention?
 
 For each video, structure the content like this:
-- Hook: Present the law-specific question dramatically
-- Setup: Show a real situation where this law applies
-- Answer: Explain the legal principle clearly
-- Action: Give practical compliance tips
+- Hook: Present a thought-provoking legal scenario
+- Setup: Illustrate the nuanced legal context
+- Analysis: Explain the underlying legal principles
+- Application: Demonstrate practical legal reasoning
+
+write all the outputs (including title) in italian
 
 Then, provide exactly ${numItems} sets of responses in XML format, each containing:
 <output_language>italian</output_language>
-<video_script>Engaging script that poses and answers ONE specific question about this law in 30 seconds</video_script>
+<video_script>Analisi dettagliata di UN aspetto legale complesso in 30 secondi</video_script>
 <keywords>At least 8 comma-separated search terms for background footage that matches the script timeline</keywords>
-<title>A compelling question directly related to this law text</title>
+<title>Una domanda stimolante sulle implicazioni di questa legge</title>
 
 Example output:
 <output_language>italian</output_language>
-<video_script>Il tuo datore di lavoro può leggere le tue chat personali sul computer aziendale?
+<video_script>Quali farmaci comuni possono risultare positivi ai test antidroga durante la guida?
 
-Molti pensano sia una violazione della privacy. Ma attenzione!
+Un problema serio che riguarda molti medicinali da banco:
+- Antistaminici che causano sonnolenza
+- Decongestionanti con pseudoefedrina
+- Alcuni sciroppi per la tosse
 
-La legge sulla privacy stabilisce che:
-- Gli strumenti aziendali possono essere monitorati
-- L'azienda deve informarti preventivamente
-- Il controllo deve essere proporzionato
+La legge richiede massima attenzione:
+- Verificare sempre le avvertenze
+- Non guidare se il farmaco compromette la lucidità
+- Consultare il medico per alternative sicure
 
-Proteggi la tua privacy: usa i dispositivi personali per le comunicazioni private. Sul pc aziendale, solo lavoro.</video_script>
-<keywords>ufficio moderno, computer lavoro, chat messenger, privacy dati, ambiente professionale</keywords>
-<title>Può Il Capo Spiare Le Tue Chat Sul PC Aziendale?</title>`
+Ricorda: la sicurezza stradale è una responsabilità di tutti.</video_script>
+<keywords>pharmacy, medicine bottles, driving test, police control, drowsy driver, warning labels, doctor consultation, traffic safety</keywords>
+<title>Farmaci da Banco e Guida: Rischi Nascosti nei Test Antidroga</title>`
 
     let items: Array<{
         language: string

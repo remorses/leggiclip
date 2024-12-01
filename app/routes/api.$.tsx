@@ -2,13 +2,22 @@ import { Spiceflow } from 'spiceflow'
 
 import { GenerateRequest, generateVideosHandler } from '~/lib/llm'
 
-
 export const app = new Spiceflow({ basePath: '/api' }).post(
-    '/generate',
+    '/generate', 
     async function* ({ request: req }) {
         const body = await req.json()
+        
+        // Check if already generating
+        if (globalThis.isGenerating) {
+            throw new Error('Already generating videos. Please wait for the current generation to complete.')
+        }
 
-        yield* await generateVideosHandler(body, req.signal)
+        try {
+            globalThis.isGenerating = true
+            yield* await generateVideosHandler(body, req.signal)
+        } finally {
+            globalThis.isGenerating = false
+        }
     },
     {
         body: GenerateRequest,

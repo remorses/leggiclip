@@ -25,9 +25,9 @@ export async function* generateVideosHandler(
     signal?: AbortSignal,
 ) {
     const numVideos = 1
-    
+
     if (signal?.aborted) return
-    
+
     const scriptsStream = await generateTikTokScripts({
         lawText: body.pdfText || defaultLawText,
         description: body.description,
@@ -192,10 +192,15 @@ export async function generateVideo({
                 'X-Api-Key': env.HEYGEN_API_KEY || '',
             },
             body: JSON.stringify({
-                caption: true,
+                // caption: true,
                 template_id: templateId,
                 title: title || 'New Video Title',
                 variables,
+                caption: false,
+                // dimension: {
+                //     width: 720,
+                //     height: 1280,
+                // },
             }),
         },
     )

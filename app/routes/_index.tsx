@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Form, redirect, useActionData } from 'react-router'
+import { Form, redirect, useActionData, useNavigation } from 'react-router'
 
 export function meta() {
     return [
@@ -20,17 +20,16 @@ function truncateText(text: string, maxChars: number = 4000): string {
 
     // Take first maxChars characters, trying to break at a sentence
     let truncated = text.slice(0, maxChars)
-    
+
     // Try to break at last sentence boundary
     const lastPeriod = truncated.lastIndexOf('.')
-    if (lastPeriod > maxChars * 0.8) { // Only break at sentence if we don't lose too much text
+    if (lastPeriod > maxChars * 0.8) {
+        // Only break at sentence if we don't lose too much text
         truncated = truncated.slice(0, lastPeriod + 1)
     }
 
     return truncated.trim()
 }
-
-
 
 export const clientAction: ActionFunction = async ({ request }) => {
     const formData = await request.formData()
@@ -44,8 +43,8 @@ export const clientAction: ActionFunction = async ({ request }) => {
 
     localStorage.setItem('pdfText', pdfText)
 
-    if (!description) {
-        return { error: 'Description, avatar and PDF file are required' }
+    if (!pdfText) {
+        return { error: 'PDF file is required' }
     }
 
     const searchParams = new URLSearchParams({
@@ -62,6 +61,7 @@ export const clientAction: ActionFunction = async ({ request }) => {
 
 export default function Home() {
     const actionData = useActionData()
+    const isLoading = useNavigation().state !== 'idle'
 
     return (
         <div className='min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8'>
@@ -112,30 +112,47 @@ export default function Home() {
                                 rows={4}
                                 className='mt-1 block w-full rounded-2xl border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none sm:text-sm'
                                 placeholder='Describe what you want in your video...'
-                                required
+                                // required
                                 defaultValue={actionData?.description}
                             />
 
-                            <div className='absolute bottom-3 left-3'>
+                            <div className='absolute bottom-3 left-3 flex flex-row items-start gap-3'>
+                                <div className="relative">
+                                    <input
+                                        type='number'
+                                        id='numVideos'
+                                        name='numVideos'
+                                        min='1'
+                                        max='10'
+                                        defaultValue='1'
+                                        className='w-20 rounded-full px-3 py-2 text-sm text-gray-900 focus:ring-indigo-500 focus:outline-none bg-gray-100 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+                                    />
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">
+                                        videos
+                                    </span>
+                                </div>
                                 <input
                                     type='file'
                                     id='pdf'
                                     name='pdf'
                                     accept='.pdf,.txt'
+                                    placeholder='Choose PDF file'
                                     className='text-sm text-gray-500
                                         file:mr-4 file:py-2 file:px-4
                                         file:rounded-full file:border-0
                                         file:text-sm file:font-semibold
                                         file:bg-gray-100 file:text-gray-700
-                                        hover:file:bg-gray-200'
+                                        hover:file:bg-gray-200
+                                        file:content-["Choose_PDF_file"]'
                                 />
                             </div>
 
                             <button
                                 type='submit'
-                                className='absolute bottom-3 right-3 py-2 px-4 rounded-full text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                                disabled={isLoading}
+                                className={`absolute bottom-3 right-3 py-2 px-4 rounded-full text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${isLoading ? 'opacity-50' : ''}`}
                             >
-                                Generate
+                                {isLoading ? 'Loading...' : 'Generate'}
                             </button>
                         </div>
                     </motion.div>

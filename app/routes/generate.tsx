@@ -1,4 +1,4 @@
-import { Form } from 'react-router'
+import { Form, useRevalidator } from 'react-router'
 import { useSearchParams } from 'react-router'
 import { useEffect, useState } from 'react'
 import { client } from '~/lib/client'
@@ -19,18 +19,26 @@ function PlayButton() {
     )
 }
 
-let testMode = true
+let testMode = false
 
 import { useLoaderData } from 'react-router'
 import { getVideoDetails, isTruthy, json, listVideos } from '~/lib/utils'
 import { ClientOnly } from '~/components'
-let cachedVideos: { videos: VideoItem[]; timestamp: number } | null = null
+
+declare global {
+    var cachedVideos: { videos: VideoItem[]; timestamp: number } | null
+}
+
+globalThis.cachedVideos = globalThis.cachedVideos || null
 
 export async function loader() {
     if (testMode) {
         const now = Date.now()
-        if (cachedVideos && now - cachedVideos.timestamp < 20000) {
-            return json({ videos: cachedVideos.videos })
+        if (
+            globalThis.cachedVideos &&
+            now - globalThis.cachedVideos.timestamp < 20000
+        ) {
+            return json({ videos: globalThis.cachedVideos.videos })
         }
     }
 
@@ -38,10 +46,10 @@ export async function loader() {
     const videos = await Promise.all(
         videos_.videos.map(async (video) => {
             const details = await getVideoDetails(video.video_id)
-            if (details.error) {
+            if (!details || details.error) {
                 return null
             }
-            
+
             return {
                 createdAt: details.created_at,
                 url: details.video_url!,
@@ -54,15 +62,37 @@ export async function loader() {
         }),
     )
 
-    cachedVideos = { videos: videos.filter(isTruthy), timestamp: Date.now() }
+    globalThis.cachedVideos = {
+        videos: videos.filter(isTruthy),
+        timestamp: Date.now(),
+    }
 
     return json({ videos })
 }
 
 function sortVideosByDate(a: VideoItem, b: VideoItem) {
-    const aDate = a.createdAt ?? 0
-    const bDate = b.createdAt ?? 0
+    const aDate = a?.createdAt ?? 0
+    const bDate = b?.createdAt ?? 0
     return bDate - aDate
+}
+
+function deduplicateById(videos: VideoItem[]): VideoItem[] {
+    const seen = new Map<string, VideoItem>()
+
+    for (const video of videos) {
+        const id = video.videoId
+        if (!id) continue
+
+        const existing = seen.get(id)
+        if (!existing) {
+            seen.set(id, video)
+        } else if (!existing.script && video.bgUrl) {
+            // Replace existing if new one has script
+            seen.set(id, video)
+        }
+    }
+
+    return Array.from(seen.values())
 }
 
 export default function GeneratePage() {
@@ -84,24 +114,46 @@ export function Generate() {
     }>({})
     const description = searchParams.get('description') || ''
     const avatar = searchParams.get('avatar') || ''
+    const showOnly = searchParams.get('showOnly') || ''
 
+    const revalidator = useRevalidator()
+
+    // useEffect(() => {
+    //     if (testMode) {
+    //         return
+    //     }
+    //     const interval = setInterval(() => {
+    //         revalidator.revalidate()
+    //     }, 10 * 1000)
+
+    //     return () => clearInterval(interval)
+    // }, [revalidator])
     useEffect(() => {
-        console.log('Starting video generation...')
+        const firstVideo = videos[0]
+        if (firstVideo?.status === 'processing') {
+            console.log('First video still processing, skipping generation')
+            return
+        }
+        if (showOnly) {
+            console.log('Show only mode enabled, skipping generation')
+            return
+        }
         if (testMode) {
             return
         }
+        console.log('Starting video generation...')
         const pdfText = localStorage.getItem('pdfText') || ''
 
-        if (!description) {
-            throw new Error('Missing description')
-        }
+        // if (!description) {
+        //     throw new Error('Missing description')
+        // }
         if (!pdfText) {
             throw new Error('Missing PDF text')
         }
         async function fetchVideos() {
             try {
                 const generator = await client.api.generate.post({
-                    description,
+                    description: description || '',
                     avatar,
                     pdfText,
                 })
@@ -112,7 +164,11 @@ export function Generate() {
                 for await (const data of generator.data) {
                     console.log('Generated videos:', data)
                     setVideos(
-                        [...data.videos, ...testVideos].sort(sortVideosByDate),
+                        deduplicateById(
+                            [...data.videos, ...testVideos].sort(
+                                sortVideosByDate,
+                            ),
+                        ),
                     )
                 }
             } catch (error) {
@@ -121,6 +177,7 @@ export function Generate() {
         }
 
         fetchVideos()
+        searchParams.set('showOnly', 'true')
     }, [])
     return (
         <div className='p-4 flex flex-col gap-6'>
