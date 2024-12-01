@@ -44,6 +44,8 @@ For each video, structure the content like this:
 
 write all the outputs (including title) in Italian
 
+non parlare di gare clandestine o di limiti di velocita. le keywords devono essere piu specifiche possibili, in una singola parola.
+
 Avoid markdown output - use only punctuation and line breaks for pacing. For acronyms use trattino to separate letters, for example "a-i" for "AI". "a-vu-doppia-esse" for "AWS". 
 For numbers write them in words, for example "uno" for "1", "due" for "2", "tre" for "3".
 

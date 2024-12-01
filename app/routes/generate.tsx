@@ -168,7 +168,7 @@ export function Generate() {
                     setVideos(
                         deduplicateById(
                             [...data.videos, ...videos].sort(sortVideosByDate),
-                        ),
+                        ).slice(0, 5),
                     )
                 }
             } catch (error) {
@@ -211,6 +211,11 @@ export function Generate() {
                                       <ProgressBox key={`progress-box-${i}`} />
                                   )
                               }
+                              // Find videos with URLs and get their IDs
+                              const videoIds = videos
+                                  .filter((v) => v?.url)
+                                  .map((v) => v.videoId)
+                              
                               return (
                                   <div
                                       key={i}
@@ -221,6 +226,8 @@ export function Generate() {
                                               <video
                                                   src={video.url}
                                                   controls
+                                                //   loading='lazy'
+                                                //   preload={videoIds.indexOf(video.videoId) === 0 ? 'auto' : 'none'}
                                                   className='absolute inset-0 w-full h-full object-cover'
                                                   onPlay={() =>
                                                       setPlayingVideos(

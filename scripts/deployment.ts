@@ -39,7 +39,7 @@ async function main() {
         forceHttps: false,
         maxInstances: 1,
         healthCheckPath: '/api/health',
-        memorySize: '500mb',
+        memorySize: '512mb',
         machineType: 'shared-cpu-1x',
         depot: true,
         // statics: [

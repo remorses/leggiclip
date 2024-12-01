@@ -12,8 +12,8 @@ export function meta() {
 }
 
 import { ActionFunction } from 'react-router'
+import { ClientOnly } from '~/components'
 import { truncateText } from '~/lib/browser-utils'
-
 
 export const clientAction: ActionFunction = async ({ request }) => {
     const formData = await request.formData()
@@ -43,20 +43,31 @@ export const clientAction: ActionFunction = async ({ request }) => {
     return redirect(`/generate?${s}`)
 }
 
-export default function Home() {
+export default function Index() {
+    return <ClientOnly>{<Home />}</ClientOnly>
+}
+
+export function Home() {
     const actionData = useActionData()
     const isLoading = useNavigation().state !== 'idle'
 
     return (
         <div className='min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8'>
-            <header className="fixed top-0 left-0 right-0 z-50">
-                <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-                    <div className="flex justify-between h-20 items-center">
-                        <div className="flex-shrink-0">
-                            <h1 className="text-2xl font-bold text-gray-900">LeggiClip</h1>
+            <header className='fixed top-0 left-0 right-0 z-50'>
+                <div className='max-w-7xl mx-auto px-6 sm:px-8 lg:px-12'>
+                    <div className='flex justify-between h-20 items-center'>
+                        <div className='flex-shrink-0'>
+                            <h1 className='text-2xl font-bold text-gray-900'>
+                                LeggiClip
+                            </h1>
                         </div>
                         <div>
-                            <a href="/generate" className="text-gray-600 hover:text-gray-900">Previous Generations</a>
+                            <a
+                                href='/generate'
+                                className='text-gray-600 hover:text-gray-900'
+                            >
+                                Previous Generations
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -113,7 +124,7 @@ export default function Home() {
                             />
 
                             <div className='absolute bottom-3 left-3 flex flex-row items-start gap-3'>
-                                <div className="relative">
+                                <div className='relative'>
                                     <input
                                         type='number'
                                         id='numVideos'
@@ -123,7 +134,7 @@ export default function Home() {
                                         defaultValue='3'
                                         className='w-20 rounded-full px-3 py-2 text-sm text-gray-900 focus:ring-indigo-500 focus:outline-none bg-gray-100 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
                                     />
-                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">
+                                    <span className='absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500'>
                                         videos
                                     </span>
                                 </div>
