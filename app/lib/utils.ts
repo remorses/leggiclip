@@ -202,8 +202,18 @@ export async function combineVideos({
 
         ffmpeg.on('close', (code) => {
             // Clean up temporary files
-            fs.unlinkSync(listPath)
-            trimmedPaths.forEach((path) => fs.unlinkSync(path))
+            try {
+                fs.unlinkSync(listPath)
+            } catch (error) {
+                console.error('Error deleting list file:', error)
+            }
+            trimmedPaths.forEach((path) => {
+                try {
+                    fs.unlinkSync(path)
+                } catch (error) {
+                    console.error('Error deleting trimmed file:', error)
+                }
+            })
             fs.rmdirSync(tempDir, { recursive: true })
 
             if (code === 0) resolve({ outputPath })
@@ -212,8 +222,18 @@ export async function combineVideos({
 
         ffmpeg.on('error', (error) => {
             // Clean up on error
-            fs.unlinkSync(listPath)
-            trimmedPaths.forEach((path) => fs.unlinkSync(path))
+            try {
+                fs.unlinkSync(listPath)
+            } catch (error) {
+                console.error('Error deleting list file:', error)
+            }
+            trimmedPaths.forEach((path) => {
+                try {
+                    fs.unlinkSync(path)
+                } catch (error) {
+                    console.error('Error deleting trimmed file:', error) 
+                }
+            })
             fs.rmdirSync(tempDir, { recursive: true })
             reject(error)
         })

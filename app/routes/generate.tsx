@@ -19,11 +19,11 @@ function PlayButton() {
     )
 }
 
-let testMode = true
+let testMode = false
 
 export default function Generate() {
     const [searchParams] = useSearchParams()
-    const [videos, setVideos] = useState<VideoItem[]>([])
+    const [videos, setVideos] = useState<VideoItem[]>(testVideos)
     const [playingVideos, setPlayingVideos] = useState<{
         [key: number]: boolean
     }>({})
@@ -33,7 +33,10 @@ export default function Generate() {
 
     useEffect(() => {
         if (testMode) {
-            setVideos(testVideos)
+            // setVideos(testVideos)
+            return
+        }
+        if (!description || !pdfText) {
             return
         }
         async function fetchVideos() {
@@ -49,7 +52,7 @@ export default function Generate() {
 
                 for await (const data of generator.data) {
                     console.log('Generated videos:', data)
-                    setVideos(data.videos)
+                    setVideos([...data.videos, ...testVideos])
                 }
             } catch (error) {
                 alert('Error generating videos: ' + error)
@@ -114,7 +117,9 @@ export default function Generate() {
                                   </VideoSkeleton>
                               )}
 
-                              <div className={`absolute pointer-events-none bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-xl p-4 space-y-3 shadow-lg transition-opacity duration-300 ${playingVideos[i] ? 'opacity-0' : 'opacity-100'}`}>
+                              <div
+                                  className={`absolute pointer-events-none bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-xl p-4 space-y-3 shadow-lg transition-opacity duration-300 ${playingVideos[i] ? 'opacity-0' : 'opacity-100'}`}
+                              >
                                   <h3 className='font-medium truncate'>
                                       {video.title}
                                   </h3>
