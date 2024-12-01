@@ -48,7 +48,7 @@ Ricorda: i limiti esistono per proteggere tutti gli utenti della strada.`,
         console.log('result:', result)
 
         expect(result).toHaveProperty('video_id')
-        // expect(result).toHaveProperty('status') 
+        // expect(result).toHaveProperty('status')
         expect(typeof result.video_id).toBe('string')
         // expect(typeof result.status).toBe('string')
     })
@@ -58,11 +58,15 @@ describe('generateVideosHandler', () => {
     it(
         'generates videos from text',
         async () => {
+            const strada = await fs.promises.readFile(
+                'example-laws/CODICE-DELLA-STRADA.txt',
+                'utf8',
+            )
             const generator = await generateVideosHandler({
-                pdfText: defaultLawText,
+                pdfText: strada,
                 description: 'Speed limit laws and safety',
                 avatar: 'male',
-                numVideos: 1,
+                numVideos: 5,
             })
 
             for await (const result of generator) {

@@ -10,6 +10,7 @@ import {
     getVideosForKeywords,
     isTruthy,
     sleep,
+    truncateText,
     uploadVideoFile,
 } from '~/lib/utils'
 import { generateTikTokScripts } from '~/lib/script'
@@ -29,7 +30,7 @@ export async function* generateVideosHandler(
     if (signal?.aborted) return
 
     const scriptsStream = await generateTikTokScripts({
-        lawText: body.pdfText || defaultLawText,
+        lawText: truncateText(body.pdfText || defaultLawText),
         description: body.description,
         numItems: numVideos,
     })
@@ -100,6 +101,7 @@ export async function* generateVideosHandler(
                     if (result?.url) {
                         item.url = result.url
                     }
+                    item.status = result.videoStatus
                     return result
                 }),
         )

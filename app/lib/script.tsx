@@ -51,7 +51,7 @@ Then, provide exactly ${numItems} sets of responses in XML format, each containi
 <title>Una domanda stimolante sulle implicazioni di questa legge</title>
 <output_language>italian</output_language>
 <video_script>Analisi dettagliata di UN aspetto legale complesso in 30 secondi</video_script>
-<keywords>At least 8 comma-separated search terms for background footage that matches the script timeline</keywords>
+<keywords>At least 8 comma-separated search terms for background footage that matches the script timeline, single words only</keywords>
 
 Example output:
 <title>Quali farmaci comuni possono risultare positivi ai test antidroga durante la guida?</title>
@@ -76,6 +76,7 @@ Ecco le informazioni chiave: leggere le avvertenze sui medicinali, valutare gli 
 
     const stream = streamText({
         model: openai('gpt-4o'),
+        temperature: 0.7,
         system: 'You are a TikTok legal educator who excels at explaining specific laws through engaging questions. Focus only on questions directly related to the provided law text. Always write in Italian.',
         prompt,
     })
