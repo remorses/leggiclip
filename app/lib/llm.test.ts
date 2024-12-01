@@ -62,7 +62,7 @@ describe('generateVideosHandler', () => {
                 pdfText: defaultLawText,
                 description: 'Speed limit laws and safety',
                 avatar: 'male',
-                numItems: 1,
+                numVideos: 1,
             })
 
             for await (const result of generator) {

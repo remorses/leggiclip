@@ -115,6 +115,7 @@ export function Generate() {
     const description = searchParams.get('description') || ''
     const avatar = searchParams.get('avatar') || ''
     const showOnly = searchParams.get('showOnly') || ''
+    const numVideos = parseInt(searchParams.get('numVideos') || '1', 10)
 
     const revalidator = useRevalidator()
 
@@ -156,6 +157,7 @@ export function Generate() {
                     description: description || '',
                     avatar,
                     pdfText,
+                    numVideos,
                 })
                 if (generator.error) {
                     throw generator.error

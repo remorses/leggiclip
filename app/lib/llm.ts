@@ -18,7 +18,7 @@ export const GenerateRequest = z.object({
     pdfText: z.string(),
     description: z.string(),
     avatar: z.string(),
-    numItems: z.number().optional(),
+    numVideos: z.number().optional(),
 })
 export async function* generateVideosHandler(
     body: z.infer<typeof GenerateRequest>,

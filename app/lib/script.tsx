@@ -73,6 +73,7 @@ Ricorda: la sicurezza stradale è una responsabilità di tutti.</video_script>
         title: string
         keywords: string[]
         script: string
+        createdAt: number
     }> = []
 
     const stream = streamText({
@@ -97,6 +98,7 @@ Ricorda: la sicurezza stradale è una responsabilità di tutti.</video_script>
             title,
             keywords: result.keywords[i]?.split(',').map((k) => k.trim()) || [],
             script: result.video_script[i] || '',
+            createdAt: Date.now() / 1000,
         }))
 
         items = newItems
