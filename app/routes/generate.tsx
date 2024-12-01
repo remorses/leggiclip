@@ -22,7 +22,7 @@ function PlayButton() {
 let testMode = true
 
 import { useLoaderData } from 'react-router'
-import { getVideoDetails, json, listVideos } from '~/lib/utils'
+import { getVideoDetails, isTruthy, json, listVideos } from '~/lib/utils'
 import { ClientOnly } from '~/components'
 let cachedVideos: { videos: VideoItem[]; timestamp: number } | null = null
 
@@ -35,20 +35,26 @@ export async function loader() {
     }
 
     const videos_ = await listVideos({ limit: 20 })
-    const videoDetails = await Promise.all(
-        videos_.videos.map((video) => getVideoDetails(video.video_id)),
+    const videos = await Promise.all(
+        videos_.videos.map(async (video) => {
+            const details = await getVideoDetails(video.video_id)
+            if (details.error) {
+                return null
+            }
+            
+            return {
+                createdAt: details.created_at,
+                url: details.video_url!,
+                title: video.video_title || 'No Title', // Assuming title might be available
+                status: details.status,
+                keywords: [], // These fields don't exist in video details
+                script: '', // These fields don't exist in video details
+                videoId: details.id,
+            } satisfies VideoItem
+        }),
     )
-    const videos: VideoItem[] = videoDetails.map((details) => ({
-        createdAt: details.created_at,
-        url: details.video_url!,
-        title: '', // These fields don't exist in video details
-        status: details.status,
-        keywords: [], // These fields don't exist in video details
-        script: '', // These fields don't exist in video details
-        videoId: details.id,
-    }))
 
-    cachedVideos = { videos, timestamp: Date.now() }
+    cachedVideos = { videos: videos.filter(isTruthy), timestamp: Date.now() }
 
     return json({ videos })
 }
@@ -117,8 +123,18 @@ export function Generate() {
         fetchVideos()
     }, [])
     return (
-        <div className='p-4'>
-            <Masonry columns={{ 640: 3, 768: 2, 1024: 3 }}  gap={24}>
+        <div className='p-4 flex flex-col gap-6'>
+            <header className='flex justify-between items-center p-4 '>
+                <a href='/' className='text-xl font-bold text-gray-800'>
+                    JournalistAI
+                </a>
+                <nav>
+                    <a href='/' className='text-gray-600 hover:text-gray-800'>
+                        Home
+                    </a>
+                </nav>
+            </header>
+            <Masonry columns={{ 640: 3, 768: 2, 1024: 3 }} gap={24}>
                 <IntroBox />
                 {videos.length === 0
                     ? // Show initial message card
@@ -185,7 +201,7 @@ export function Generate() {
                                       )}
 
                                       <div
-                                          className={`absolute pointer-events-none bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-xl p-4 space-y-3 shadow-lg transition-opacity duration-300 ${playingVideos[i] ? 'opacity-0' : 'opacity-100'}`}
+                                          className={`absolute pointer-events-none bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-xl p-4 space-y-3 transition-opacity duration-300 ${playingVideos[i] ? 'opacity-0' : 'opacity-100'}`}
                                       >
                                           <h3 className='font-medium truncate'>
                                               {video.title}
@@ -273,7 +289,7 @@ function VideoSkeleton({ children }: { children?: React.ReactNode }) {
 
 function IntroBox() {
     return (
-        <div className='relative rounded-xl overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 p-8 min-h-[360px] flex flex-col items-center justify-center text-center'>
+        <div className='relative rounded-xl overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 p-8 min-h-[320px] flex flex-col items-center justify-center text-center'>
             <h2 className='text-2xl font-bold text-gray-800 mb-4'>
                 Your Videos Will Appear Here
             </h2>
