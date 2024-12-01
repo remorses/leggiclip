@@ -1,6 +1,28 @@
 import { describe, it, expect } from 'vitest'
 import { defaultLawText, generateVideo, generateVideosHandler } from './llm'
 import { generateTikTokScripts } from '~/lib/script'
+import { uploadVideoFile } from '~/lib/utils'
+
+import fs from 'fs'
+
+describe('uploadFile', () => {
+    it('uploads a file and returns URL', async () => {
+        // Create a simple test buffer
+        const testContent = await fs.promises.readFile('downloaded-videos/cars-video.mp4')
+        const filename = `test-${Date.now()}.mp4`
+
+        const url = await uploadVideoFile({
+            content: testContent,
+            filename: filename
+        })
+
+        expect(url).toBeTruthy()
+        expect(typeof url).toBe('string')
+        expect(url).toMatch(/^https:\/\//)
+        
+        console.log('Upload URL:', url)
+    })
+})
 
 
 describe('generateVideo heygen', () => {

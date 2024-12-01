@@ -333,7 +333,7 @@ export async function getVideoDetails(videoId: string) {
 }
 import { put } from '@vercel/blob'
 
-export async function uploadFile({
+export async function uploadFileVercel({
     content,
     filename,
 }: {
@@ -345,6 +345,50 @@ export async function uploadFile({
         return url
     } catch (error) {
         console.error('Error uploading to Vercel Blob:', error)
+        throw error
+    }
+}
+
+export async function uploadVideoFile({
+    content,
+    filename,
+}: {
+    content: string | Buffer
+    filename: string
+}) {
+    try {
+        const response = await fetch('https://upload.heygen.com/v1/asset', {
+            method: 'POST',
+            headers: {
+                'x-api-key': env.HEYGEN_API_KEY || '',
+                'Content-Type': 'video/mp4',
+            },
+            body: content,
+        })
+
+        if (!response.ok) {
+            const text = await response.text()
+            throw new Error(
+                `Upload failed with status ${response.status} - ${text}`,
+            )
+        }
+
+        const data = (await response.json()) as {
+            code: number
+            data: {
+                id: string
+                name: string
+                file_type: string
+                folder_id: string
+                meta: null
+                created_ts: number
+                url: string
+            }
+        }
+        console.log(data)
+        return data.data.url
+    } catch (error) {
+        console.error('Error uploading to Heygen:', error)
         throw error
     }
 }

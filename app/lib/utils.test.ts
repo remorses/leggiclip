@@ -5,7 +5,7 @@ import {
     getUnsplashVideo,
     getVideoDetails,
     getVideosForKeywords,
-    uploadFile,
+    uploadVideoFile,
 } from './utils'
 import { generateVideosHandler, getVideoStatus } from '~/lib/llm'
 import { templateId } from '~/lib/env'
@@ -89,7 +89,7 @@ describe(
             const videoBuffer = Buffer.from(await videoResponse.arrayBuffer())
 
             // Upload the video
-            const uploadResult = await uploadFile({
+            const uploadResult = await uploadVideoFile({
                 content: videoBuffer,
                 filename: 'test-video.mp4'
             })

@@ -10,10 +10,9 @@ import {
     getVideosForKeywords,
     isTruthy,
     sleep,
-    uploadFile,
+    uploadVideoFile,
 } from '~/lib/utils'
 import { generateTikTokScripts } from '~/lib/script'
-
 
 export const GenerateRequest = z.object({
     pdfText: z.string(),
@@ -59,7 +58,7 @@ export async function* generateVideosHandler(
         })
         // Upload the combined video
         const fileContent = await fs.promises.readFile(res.outputPath)
-        const uploadUrl = await uploadFile({
+        const uploadUrl = await uploadVideoFile({
             content: fileContent,
             filename: `combined-${Date.now()}.mp4`,
         })
@@ -138,20 +137,18 @@ export async function getVideoStatus(videoId: string) {
     }
 }
 
-
-
 export async function generateVideo({
     title,
     script,
 
-    bgUrl = 'https://files2.heygen.ai/prod/movio/preset/image/origin/28e0c75a51624ee89d3c4a1eb044ef2c.jpg',
+    bgUrl,
 }: {
     title?: string
     script: string
     // keywords?: string[]
+
     bgUrl?: string
 }) {
-    
     const variables: Variables = {
         title: {
             name: 'title',
@@ -162,9 +159,10 @@ export async function generateVideo({
         },
         bg: {
             name: 'bg',
-            type: 'image',
+            type: 'video',
             properties: {
                 url: bgUrl,
+                play_style: 'loop',
                 fit: 'cover',
             },
         },
@@ -175,6 +173,9 @@ export async function generateVideo({
                 content: script,
             },
         },
+    }
+    if (!bgUrl) {
+        delete variables.bg
     }
 
     const response = await fetch(
@@ -209,8 +210,6 @@ export async function generateVideo({
     // return data
 }
 
-
-
 type ExtractGeneratorType<T> = T extends AsyncGenerator<infer U> ? U : never
 
 type ArrayItem<T> = T extends (infer U)[] ? U : never
@@ -222,6 +221,8 @@ type Variables = Record<
         type: string
         properties: {
             url?: string
+            play_style?: string
+
             content?: string
             asset_id?: string | null
             fit?: string
