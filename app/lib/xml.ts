@@ -39,8 +39,10 @@ export function extractTagsArrays<T extends string>({
                             }
                         } else if (
                             node.type === ElementType.Text &&
+                            node.parent?.type === ElementType.Root &&
                             node.data.trim()
                         ) {
+                            console.log('node.parent',node.parent)
                             result.others.push(node.data.trim())
                         }
                     })

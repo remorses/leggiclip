@@ -6,8 +6,6 @@
     "build": "react-router build",
     "dev": "doppler run -- react-router dev",
     "deployment": "doppler run -- tsx scripts/deployment.ts",
-    
-    
     "start": "react-router-serve ./build/server/index.js",
     "test": "doppler run -- vitest",
     "test:generate": "doppler run -- tsx scripts/generate-test.ts",
@@ -24,6 +22,7 @@
     "@vercel/blob": "^0.26.0",
     "@xmorse/deployment-utils": "^0.2.17",
     "ai": "^4.0.9",
+    "dedent": "^1.5.3",
     "dom-serializer": "^2.0.0",
     "framer-motion": "^11.12.0",
     "htmlparser2": "^9.1.0",
