@@ -154,9 +154,11 @@ export async function getUnsplashVideo(keyword: string) {
 export async function combineVideos({
     videoPaths,
     segmentDurationSeconds = 5,
+    signal,
 }: {
     videoPaths: string[]
     segmentDurationSeconds?: number
+    signal?: AbortSignal
 }): Promise<{ outputPath: string }> {
     const outputDir = 'output-videos'
     const tempDir = `temp-videos-${Date.now()}`
@@ -164,9 +166,19 @@ export async function combineVideos({
     fs.mkdirSync(tempDir, { recursive: true })
     const outputPath = `${outputDir}/output-${Date.now()}.mp4`
 
+    // Check if already aborted
+    if (signal?.aborted) {
+        throw new Error('Operation aborted')
+    }
+
     // First, trim each video and reencode
     const trimPromises = videoPaths.map((videoPath, index) => {
         return new Promise<string>((resolveTrim, rejectTrim) => {
+            if (signal?.aborted) {
+                rejectTrim(new Error('Operation aborted'))
+                return
+            }
+
             const trimmedPath = `${tempDir}/trimmed-${index}-${Date.now()}.mp4`
             // Reencode during trim to ensure consistent format
             const trimCommand = `ffmpeg -ss 0 -t ${segmentDurationSeconds} -i "${videoPath}" -c:v libx264 -preset medium -crf 23 -c:a aac -b:a 128k "${trimmedPath}"`
@@ -175,12 +187,16 @@ export async function combineVideos({
                 shell: true,
                 stdio: 'inherit',
             })
+
+            // Handle abort signal
+            signal?.addEventListener('abort', () => {
+                ffmpeg.kill()
+                rejectTrim(new Error('Operation aborted'))
+            })
+
             ffmpeg.on('close', (code) => {
                 if (code === 0) resolveTrim(trimmedPath)
-                else
-                    rejectTrim(
-                        new Error(`Trim process exited with code ${code}`),
-                    )
+                else rejectTrim(new Error(`Trim process exited with code ${code}`))
             })
             ffmpeg.on('error', rejectTrim)
         })
@@ -192,6 +208,12 @@ export async function combineVideos({
     const listPath = `list-${Date.now()}.txt`
     fs.writeFileSync(listPath, fileList)
 
+    // Check if aborted before concatenation
+    if (signal?.aborted) {
+        cleanup()
+        throw new Error('Operation aborted')
+    }
+
     // Concatenate trimmed files using stream copy since they're already in the right format
     return new Promise<{ outputPath: string }>((resolve, reject) => {
         const concatCommand = `ffmpeg -f concat -safe 0 -i "${listPath}" -c:v libx264 -preset medium -crf 23 -c:a aac -b:a 128k -vsync 2 -async 1 "${outputPath}"`
@@ -200,48 +222,44 @@ export async function combineVideos({
             stdio: 'inherit',
         })
 
-        ffmpeg.on('close', (code) => {
-            // Clean up temporary files
-            try {
-                fs.unlinkSync(listPath)
-            } catch (error) {
-                console.error('Error deleting list file:', error)
-            }
-            trimmedPaths.forEach((path) => {
-                try {
-                    fs.unlinkSync(path)
-                } catch (error) {
-                    console.error('Error deleting trimmed file:', error)
-                }
-            })
-            try {
-                fs.rmdirSync(tempDir, { recursive: true })
-            } catch (error) {
-                console.error('Error deleting temp directory:', error)
-            }
+        // Handle abort signal
+        signal?.addEventListener('abort', () => {
+            ffmpeg.kill()
+            cleanup()
+            reject(new Error('Operation aborted'))
+        })
 
+        ffmpeg.on('close', (code) => {
+            cleanup()
             if (code === 0) resolve({ outputPath })
             else reject(new Error(`Concat process exited with code ${code}`))
         })
 
-        // ffmpeg.on('error', (error) => {
-        //     // Clean up on error
-        //     try {
-        //         fs.unlinkSync(listPath)
-        //     } catch (error) {
-        //         console.error('Error deleting list file:', error)
-        //     }
-        //     trimmedPaths.forEach((path) => {
-        //         try {
-        //             fs.unlinkSync(path)
-        //         } catch (error) {
-        //             console.error('Error deleting trimmed file:', error) 
-        //         }
-        //     })
-        //     fs.rmdirSync(tempDir, { recursive: true })
-        //     reject(error)
-        // })
+        ffmpeg.on('error', (error) => {
+            cleanup()
+            reject(error)
+        })
     })
+
+    function cleanup() {
+        try {
+            fs.unlinkSync(listPath)
+        } catch (error) {
+            console.error('Error deleting list file:', error)
+        }
+        trimmedPaths.forEach((path) => {
+            try {
+                fs.unlinkSync(path)
+            } catch (error) {
+                console.error('Error deleting trimmed file:', error)
+            }
+        })
+        try {
+            fs.rmdirSync(tempDir, { recursive: true })
+        } catch (error) {
+            console.error('Error deleting temp directory:', error)
+        }
+    }
 }
 
 

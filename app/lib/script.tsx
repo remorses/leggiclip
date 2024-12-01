@@ -15,7 +15,7 @@ export async function* generateTikTokScripts({
     description: string
     numItems?: number
 }) {
-    const prompt = `Analyze the law text and generate ${numItems} concise 30-second educational TikTok video scripts about: ${description}
+    const prompt = `Analyze the law text and generate exactly ${numItems} concise 30-second educational TikTok video scripts about: ${description}
 
 Law text:
 <law_text>

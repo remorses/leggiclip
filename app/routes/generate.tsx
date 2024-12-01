@@ -19,7 +19,7 @@ function PlayButton() {
     )
 }
 
-let testMode = true
+let testMode = false
 
 export default function Generate() {
     const [searchParams] = useSearchParams()
@@ -31,6 +31,7 @@ export default function Generate() {
     const avatar = searchParams.get('avatar') || ''
 
     useEffect(() => {
+        console.log('Starting video generation...')
         if (testMode) {
             // setVideos(testVideos)
             return
@@ -59,7 +60,7 @@ export default function Generate() {
                     setVideos([...data.videos, ...testVideos])
                 }
             } catch (error) {
-                alert('Error generating videos: ' + error)
+                console.log('Error generating videos:', error)
             }
         }
 

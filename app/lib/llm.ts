@@ -57,6 +57,7 @@ export async function* generateVideosHandler(
     for (const item of videos) {
         if (signal?.aborted) return
         const res = await combineVideos({
+            signal: signal,
             videoPaths: item
                 .bgVideos!.map((video) => video!.filePath!)
                 .filter(isTruthy),
