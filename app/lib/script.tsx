@@ -15,57 +15,56 @@ export async function* generateTikTokScripts({
     description: string
     numItems?: number
 }) {
-    const prompt = `Analyze the law text and generate ${numItems} concise 30-second educational video scripts about: ${description}
+    const prompt = `Analyze the law text and generate ${numItems} concise 30-second educational TikTok video scripts about: ${description}
 
 Law text:
 <law_text>
 ${lawText}
 </law_text>
 
-First, let's think through the key aspects step by step:
+Let's first understand this law deeply:
+- What is the core purpose of this law?
+- Who does this law affect directly and indirectly?
+- What are the key obligations or rights it establishes?
+- What are the consequences of non-compliance?
+- What common situations does this law address?
 
-1. Core Legal Concepts:
-- What is the single most important legal principle to convey?
-- Which specific regulation needs clear explanation?
+Now, let's identify the most compelling questions about this specific law:
+- What aspects of this law surprise or confuse people?
+- Which parts have the most direct impact on daily life?
+- What are the most common violations people make unknowingly?
+- What rights do people not know they have under this law?
+- What misconceptions exist about this specific legislation?
 
-2. Real-World Impact:
-- How does this law affect everyday situations?
-- What's the most common misconception?
-
-3. Practical Application:
-- What is the key action people should take?
-- What's the most important compliance tip?
-
-4. Educational Goals:
-- What is the ONE critical takeaway?
-- How can we make this concept instantly relatable?
-
-Now, structure each 30-second video using this tight framework:
-1. The Hook (5s): Present a relatable situation
-2. The Problem (5s): Show the legal challenge
-3. The Solution (10s): Explain the key legal concept
-4. The Action (10s): Give clear, practical guidance
+For each video, structure the content like this:
+- Hook: Present the law-specific question dramatically
+- Setup: Show a real situation where this law applies
+- Answer: Explain the legal principle clearly
+- Action: Give practical compliance tips
 
 Then, provide exactly ${numItems} sets of responses in XML format, each containing:
-<video_script>Clear, direct script that fits within 30 seconds. Focus on ONE key learning and immediate practical application.</video_script>
-<keywords>At least 5 comma-separated search terms for background footage that matches the script timeline. Each term will be used to find relevant video clips.</keywords>
-<title>A focused title that captures the key learning</title>
+<output_language>italian</output_language>
+<video_script>Engaging script that poses and answers ONE specific question about this law in 30 seconds</video_script>
+<keywords>At least 8 comma-separated search terms for background footage that matches the script timeline</keywords>
+<title>A compelling question directly related to this law text</title>
 
-Example output for one set:
-<video_script>A driver speeds down a residential street. The speed limit is 25, but children are playing nearby.
+Example output:
+<output_language>italian</output_language>
+<video_script>Il tuo datore di lavoro può leggere le tue chat personali sul computer aziendale?
 
-Speed limits aren't just numbers - they're about protecting lives.
+Molti pensano sia una violazione della privacy. Ma attenzione!
 
-The law requires drivers to:
-- Slow down in residential areas
-- Watch for pedestrians
-- Adjust speed for conditions
+La legge sulla privacy stabilisce che:
+- Gli strumenti aziendali possono essere monitorati
+- L'azienda deve informarti preventivamente
+- Il controllo deve essere proporzionato
 
-Remember: The right speed saves lives. Drive like your family lives here.</video_script>
-<keywords>residential street view, children playing, speed limit sign, careful driving, neighborhood safety</keywords>
-<title>Residential Speed Limits: Protecting Our Communities</title>`
+Proteggi la tua privacy: usa i dispositivi personali per le comunicazioni private. Sul pc aziendale, solo lavoro.</video_script>
+<keywords>ufficio moderno, computer lavoro, chat messenger, privacy dati, ambiente professionale</keywords>
+<title>Può Il Capo Spiare Le Tue Chat Sul PC Aziendale?</title>`
 
     let items: Array<{
+        language: string
         title: string
         keywords: string[]
         script: string
@@ -73,7 +72,7 @@ Remember: The right speed saves lives. Drive like your family lives here.</video
 
     const stream = streamText({
         model: openai('gpt-4o'),
-        system: 'You are an educational content creator focused on clear, practical legal explanations within strict time limits.',
+        system: 'You are a TikTok legal educator who excels at explaining specific laws through engaging questions. Focus only on questions directly related to the provided law text. Always write in Italian.',
         prompt,
     })
     let lastYieldTime = 0
@@ -84,11 +83,12 @@ Remember: The right speed saves lives. Drive like your family lives here.</video
 
         const result = extractTagsArrays({
             xml: allText,
-            tags: ['title', 'keywords', 'video_script'],
+            tags: ['output_language', 'title', 'keywords', 'video_script'],
         })
 
         // Update items with any new complete sets
         const newItems = result.title.map((title, i) => ({
+            language: result.output_language[i] || 'italian',
             title,
             keywords: result.keywords[i]?.split(',').map((k) => k.trim()) || [],
             script: result.video_script[i] || '',
@@ -108,70 +108,23 @@ Remember: The right speed saves lives. Drive like your family lives here.</video
     yield items
 }
 
-
 let scriptPrompt = `
-🕓🕓Use the Pause button for natural flow🕓🕓
-There are two types of pauses-
+# Guida alla Formattazione degli Script Vocali
 
-In-script pause- Pause in between the words of the script.
+## Punteggiatura
+- Trattini (-): Dividere le sillabe
+- Virgole (,): Pause brevi
+- Punti (.): Pause lunghe con tono discendente
 
-Between-sections-pause- Pause made between different script sections in your video.
+## Pronuncia
+- Fare doppio clic sulle parole per impostare la pronuncia personalizzata
+- Usare i trattini per l'enfasi
+- Formattare gli acronimi: "AI" → "a-i", "AWS" → "a-vu-doppia-esse"
 
-Move your text cursor to the desired location in the script.
-
-Click the "🕓Add Pause🕓" button at the bottom left.
-
-Each pause represents a half-second break; you can add multiple pauses for a longer break.
-
-To create pauses between scripts, find the Clock Icon underneath your script.
-
- 
-
-✏️✏️Incorporate Punctuation Marks✏️✏️
-Hyphens (-): Separate syllables for clear pronunciation.
-
-Commas (,): Create shorter breaks.
-
-Periods (.): Introduce longer breaks with downward inflection.
-
- 
-
-🔤🔤Ensure Correct Spelling and Language Consistency🔤🔤
-Spell Correctly: Double-check your script for spelling errors.
-
-Language Consistency: Avoid mixing languages. For instance, do not include Arabic words in an English script.
-
- 
-
-🗣️🗣️  Use our Pronunciation feature 🗣️ 🗣️ 
-If you Preview your script and you feel some words aren't being pronounced correctly, you can double-click them and chose Pronunciation - here you can type exactly how you'd like the word to be pronounced. You can also use hyphens (-) to emphasize pronunciation.
-
-This is particularly useful with Acronyms- 
-
-"AI" should be "a-eye."
-
-"AWS" becomes "a-double you-s."
-
- 
-
- 
-
- 
-
-🔢🔢 How to write Numbers 🔢🔢
-You can write out numbers or use phonetic spelling for clarity. Examples:
-
-"2012" should be "twenty twelve."
-
-"3/8" becomes "three eighths of an inch."
-
-"01:18" should be "one minute and eighteen seconds."
-
-"10-19-2016" is "October nineteenth two thousand sixteen."
-
-"150th CT NE, Redmond, WA" should be "150th Court Northeast Redmond Washington."
-
- 
-
-For a more detailed walkthrough of our Scripts feature, please see this article here. Happy scripting!
+## Numeri
+- Scrivere i numeri in lettere: "2012" → "duemila dodici"
+- Formattare le date: "10-19-2016" → "diciannove ottobre duemila sedici"
+- Formattare le frazioni: "3/8" → "tre ottavi"
+- Formattare gli orari: "01:18" → "un minuto e diciotto secondi"
+- Formattare gli indirizzi: "150th CT NE" → "150esima Corte Nord Est"
 `
