@@ -19,11 +19,50 @@ function PlayButton() {
     )
 }
 
-let testMode = false
+let testMode = true
 
-export default function Generate() {
+import { useLoaderData } from 'react-router'
+import { getVideoDetails, json, listVideos } from '~/lib/utils'
+import { ClientOnly } from '~/components'
+
+export async function loader() {
+    const videos_ = await listVideos({ limit: 20 })
+    const videoDetails = await Promise.all(
+        videos_.videos.map((video) => getVideoDetails(video.video_id)),
+    )
+    const videos: VideoItem[] = videoDetails.map((details) => ({
+        createdAt: details.created_at,
+        url: details.video_url!,
+        title: '', // These fields don't exist in video details
+        status: details.status,
+        keywords: [], // These fields don't exist in video details
+        script: '', // These fields don't exist in video details
+        videoId: details.id,
+    }))
+    return json({ videos })
+}
+
+function sortVideosByDate(a: VideoItem, b: VideoItem) {
+    const aDate = a.createdAt ?? 0
+    const bDate = b.createdAt ?? 0
+    return bDate - aDate
+}
+
+export default function GeneratePage() {
+    return (
+        <ClientOnly>
+            <Generate />
+        </ClientOnly>
+    )
+}
+
+
+export  function Generate() {
+    const loaderData = useLoaderData() as { videos: VideoItem[] }
     const [searchParams] = useSearchParams()
-    const [videos, setVideos] = useState<VideoItem[]>(testVideos)
+    const [videos, setVideos] = useState<VideoItem[]>(
+        testVideos.concat(loaderData.videos).sort(sortVideosByDate),
+    )
     const [playingVideos, setPlayingVideos] = useState<{
         [key: number]: boolean
     }>({})
@@ -57,7 +96,7 @@ export default function Generate() {
 
                 for await (const data of generator.data) {
                     console.log('Generated videos:', data)
-                    setVideos([...data.videos, ...testVideos])
+                    setVideos([...data.videos, ...testVideos].sort(sortVideosByDate))
                 }
             } catch (error) {
                 console.log('Error generating videos:', error)
@@ -204,39 +243,38 @@ function IntroBox() {
                 Your Videos Will Appear Here
             </h2>
             <p className='text-gray-600 mb-6'>
-                We're processing your request and generating
-                personalized videos based on your input. This may take a
-                few moments.
+                We're processing your request and generating personalized videos
+                based on your input. This may take a few moments.
             </p>
         </div>
     )
 }
 
-
 function ProgressBox() {
     return (
-        <div className="p-6 mb-8 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+        <div className='p-6 mb-8 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50'>
+            <h2 className='text-2xl font-bold text-gray-900 mb-4'>
                 Video Generation in Progress
             </h2>
-            <p className="text-gray-600">
-                Your videos are being generated. This process may take a few minutes. You'll see the videos appear below as they're completed.
+            <p className='text-gray-600'>
+                Your videos are being generated. This process may take a few
+                minutes. You'll see the videos appear below as they're
+                completed.
             </p>
-            <div className="mt-4 flex gap-2 flex-wrap">
-                <div className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
-                    <span className="mr-2">●</span> Processing videos
+            <div className='mt-4 flex gap-2 flex-wrap'>
+                <div className='inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800'>
+                    <span className='mr-2'>●</span> Processing videos
                 </div>
-                <div className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
-                    <span className="mr-2">✓</span> Generating scripts
+                <div className='inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800'>
+                    <span className='mr-2'>✓</span> Generating scripts
                 </div>
-                <div className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800">
-                    <span className="mr-2">⟳</span> Finding background footage
+                <div className='inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800'>
+                    <span className='mr-2'>⟳</span> Finding background footage
                 </div>
             </div>
         </div>
     )
 }
-
 
 export const testVideos: VideoItem[] = [
     {
@@ -245,19 +283,20 @@ export const testVideos: VideoItem[] = [
         status: 'Complete',
         keywords: [
             'transport',
-            'transport',
-            'transport',
+            'urban',
+            'mobility',
             'city',
-            'city',
-            'city',
+            'downtown',
+            'metropolis', 
             'traffic',
-            'traffic',
-            'traffic',
+            'congestion',
+            'commute',
             'cars',
-            'cars',
-            'cars',
+            'vehicles',
+            'automobiles',
         ],
         script: 'A timelapse of busy city traffic showing cars moving through intersections',
+        createdAt: new Date('2023-11-29').getTime() / 1000,
     },
     {
         url: undefined,
@@ -265,6 +304,7 @@ export const testVideos: VideoItem[] = [
         status: 'Processing',
         keywords: ['law', 'business', 'office'],
         script: 'A scene showing a legal consultation between a lawyer and client',
+        createdAt: new Date('2023-11-29').getTime() / 1000,
     },
     {
         url: 'https://videos.pexels.com/video-files/3327273/pexels-artem-podrez-7233789.mp4',
@@ -272,6 +312,7 @@ export const testVideos: VideoItem[] = [
         status: 'Complete',
         keywords: ['study', 'education', 'library', 'learning'],
         script: 'Students studying and reading books in a quiet library setting',
+        createdAt: new Date('2023-11-29').getTime() / 1000,
     },
     {
         url: 'https://videos.pexels.com/video-files/1726955/pexels-kelly-lacy-5473767.mp4',
@@ -279,5 +320,6 @@ export const testVideos: VideoItem[] = [
         status: 'Complete',
         keywords: ['safety', 'traffic', 'semaphore', 'street'],
         script: 'Traffic safety demonstration showing proper use of traffic signals',
+        createdAt: new Date('2023-11-29').getTime() / 1000,
     },
 ]

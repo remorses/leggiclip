@@ -236,6 +236,7 @@ type Variables = Record<
 >
 
 export type VideoItem = {
+    createdAt: number
     keywords: string[]
     title: string
     script: string

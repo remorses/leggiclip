@@ -196,7 +196,10 @@ export async function combineVideos({
 
             ffmpeg.on('close', (code) => {
                 if (code === 0) resolveTrim(trimmedPath)
-                else rejectTrim(new Error(`Trim process exited with code ${code}`))
+                else
+                    rejectTrim(
+                        new Error(`Trim process exited with code ${code}`),
+                    )
             })
             ffmpeg.on('error', rejectTrim)
         })
@@ -261,8 +264,6 @@ export async function combineVideos({
         }
     }
 }
-
-
 
 export async function getVideosForKeywords({
     keywords,
@@ -349,7 +350,20 @@ export async function getTemplateInfo(templateId: string) {
         throw error
     }
 }
-export async function getVideoDetails(videoId: string) {
+
+export async function getVideoDetails(videoId: string): Promise<{
+    callback_id: string | null
+    caption_url: string | null
+    created_at: number
+    duration: number | null
+    error: string | null
+    gif_url: string | null
+    id: string
+    status: string
+    thumbnail_url: string | null
+    video_url: string | null
+    video_url_caption: string | null
+}> {
     try {
         const response = await fetch(
             `https://api.heygen.com/v1/video_status.get?video_id=${videoId}`,
@@ -465,5 +479,49 @@ export async function _uploadFile(
         console.error('Error uploading file:', error)
         console.timeEnd('uploadImage')
         return null
+    }
+}
+
+type ListVideosResponse = {
+    videos: Array<{
+        video_id: string
+        status: string
+        video_title: string
+        created_at: number
+        type: string
+    }>
+    token: string
+}
+
+export async function listVideos({
+    limit = 20,
+}: {
+    limit?: number
+} = {}): Promise<ListVideosResponse> {
+    try {
+        const response = await fetch(
+            `https://api.heygen.com/v1/video.list?limit=${limit}`,
+            {
+                method: 'GET',
+                headers: {
+                    accept: 'application/json',
+                    'x-api-key': process.env.HEYGEN_API_KEY || '',
+                },
+            },
+        )
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        const data = await response.json()
+        return data.data
+    } catch (error) {
+        console.error(
+            'Error listing Heygen videos:',
+            error,
+            error instanceof Error ? error.message : '',
+        )
+        throw error
     }
 }
