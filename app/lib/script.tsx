@@ -3,7 +3,8 @@ import { streamText } from 'ai'
 import { extractTagsArrays } from '~/lib/xml'
 
 const openai = createOpenAI({
-    apiKey: process.env.OPENAI_KEY,
+    apiKey: process.env.AIML_API_KEY,
+    baseURL: 'https://api.aimlapi.com/'
 })
 
 export async function* generateTikTokScripts({
@@ -77,7 +78,7 @@ Ecco le informazioni chiave: leggere le avvertenze sui medicinali, valutare gli 
     }> = []
 
     const stream = streamText({
-        model: openai('gpt-4o'),
+        model: openai('meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo'),
         temperature: 0.7,
         system: 'You are a TikTok legal educator who excels at explaining specific laws through engaging questions. Focus only on questions directly related to the provided law text. Always write in Italian.',
         prompt,
