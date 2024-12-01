@@ -1,6 +1,5 @@
-import { Form, redirect } from 'react-router'
-import { useActionData, useNavigate } from 'react-router'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
+import { Form, redirect, useActionData } from 'react-router'
 
 export function meta() {
     return [
@@ -13,9 +12,9 @@ export function meta() {
 }
 
 import { ActionFunction } from 'react-router'
-import { fakeStreaming } from '~/lib/utils'
-import { useState, useEffect } from 'react'
-export const action: ActionFunction = async ({ request }) => {
+
+
+export const clientAction: ActionFunction = async ({ request }) => {
     const formData = await request.formData()
     const description = formData.get('description') as string
     const avatar = formData.get('avatar') as string
@@ -39,32 +38,6 @@ export const action: ActionFunction = async ({ request }) => {
 
 export default function Home() {
     const actionData = useActionData()
-    const navigate = useNavigate()
-    const [script, setScript] = useState('')
-
-    useEffect(() => {
-        if (actionData && !actionData.error) {
-            const params = new URLSearchParams({
-                title: actionData.title,
-                script: script || '',
-                keywords: actionData.keywords.join(','),
-                description: actionData.description,
-                avatar: actionData.avatar,
-            })
-            navigate(`/generate?${params.toString()}`)
-        }
-    }, [actionData, script, navigate])
-
-    useEffect(() => {
-        if (actionData?.script) {
-            const updateScript = async () => {
-                for await (const text of actionData.script) {
-                    setScript(text)
-                }
-            }
-            updateScript()
-        }
-    }, [actionData?.script])
 
     return (
         <div className='min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8'>
