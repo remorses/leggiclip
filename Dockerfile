@@ -4,7 +4,9 @@ WORKDIR /app
 
 COPY docker.package.json ./package.json
 
-RUN npm install -g remix-serve-but-not-shit@0.0.6 && npm install
+RUN npm install -g @react-router/serve && npm install
+
+RUN ls -l
 
 COPY ./build /app/build
 
@@ -14,4 +16,4 @@ EXPOSE $PORT
 
 
 
-CMD ["remix-serve-but-not-shit", "./build/server/index.js"]
+CMD ["react-router-serve", "./build/server/index.js"]
