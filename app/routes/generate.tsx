@@ -74,21 +74,7 @@ export default function Generate() {
                 {videos.length === 0
                     ? // Show initial message card
 
-                      [...Array(6)].map((_, i) => (
-                          <div
-                              key={i}
-                              className='relative rounded-xl overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 aspect-[9/16]'
-                          >
-                              <div className='absolute inset-0 animate-pulse flex flex-col space-y-4 p-4'>
-                                  <div className='w-full h-2/3 bg-blue-200 rounded-lg'></div>
-                                  <div className='w-full h-20 bg-blue-100 rounded-lg'></div>
-                                  <div className='flex flex-col space-y-2'>
-                                      <div className='h-3 bg-blue-200 rounded w-3/4'></div>
-                                      <div className='h-3 bg-blue-100 rounded w-1/2'></div>
-                                  </div>
-                              </div>
-                          </div>
-                      ))
+                      [...Array(6)].map((_, i) => <VideoSkeleton key={i} />)
                     : // Show actual videos
                       videos.map((video, i) => (
                           <div
@@ -123,9 +109,9 @@ export default function Generate() {
                                       {!playingVideos[i] && <PlayButton />}
                                   </>
                               ) : (
-                                  <div className='absolute inset-0 bg-gray-100 flex items-center justify-center'>
+                                  <VideoSkeleton>
                                       Processing video...
-                                  </div>
+                                  </VideoSkeleton>
                               )}
 
                               {!playingVideos[i] && (
@@ -180,21 +166,29 @@ export default function Generate() {
                     </div>
                 </div>
                 {[...Array(6)].map((_, i) => (
-                    <div
-                        key={i}
-                        className='relative rounded-xl overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 aspect-[9/16]'
-                    >
-                        <div className='absolute inset-0 animate-pulse flex flex-col space-y-4 p-4'>
-                            <div className='w-full h-2/3 bg-blue-200 rounded-lg'></div>
-                            <div className='w-full h-20 bg-blue-100 rounded-lg'></div>
-                            <div className='flex flex-col space-y-2'>
-                                <div className='h-3 bg-blue-200 rounded w-3/4'></div>
-                                <div className='h-3 bg-blue-100 rounded w-1/2'></div>
-                            </div>
-                        </div>
-                    </div>
+                    <VideoSkeleton key={i} />
                 ))}
             </Masonry>
+        </div>
+    )
+}
+
+function VideoSkeleton({ children }: { children?: React.ReactNode }) {
+    return (
+        <div className='relative rounded-xl overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 aspect-[9/16]'>
+            <div className='absolute inset-0 animate-pulse flex flex-col space-y-4 h-full p-4'>
+                <div className='w-full bg-blue-200 grow rounded-lg'></div>
+                <div className='w-full h-20 bg-blue-100 rounded-lg'></div>
+                <div className='flex flex-col space-y-2'>
+                    <div className='h-3 bg-blue-200 rounded w-3/4'></div>
+                    <div className='h-3 bg-blue-100 rounded w-1/2'></div>
+                </div>
+            </div>
+            {children && (
+                <div className='absolute inset-0 flex items-center justify-center'>
+                    {children}
+                </div>
+            )}
         </div>
     )
 }
