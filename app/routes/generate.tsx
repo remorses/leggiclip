@@ -24,8 +24,16 @@ let testMode = true
 import { useLoaderData } from 'react-router'
 import { getVideoDetails, json, listVideos } from '~/lib/utils'
 import { ClientOnly } from '~/components'
+let cachedVideos: { videos: VideoItem[]; timestamp: number } | null = null
 
 export async function loader() {
+    if (testMode) {
+        const now = Date.now()
+        if (cachedVideos && now - cachedVideos.timestamp < 20000) {
+            return json({ videos: cachedVideos.videos })
+        }
+    }
+
     const videos_ = await listVideos({ limit: 20 })
     const videoDetails = await Promise.all(
         videos_.videos.map((video) => getVideoDetails(video.video_id)),
@@ -39,6 +47,9 @@ export async function loader() {
         script: '', // These fields don't exist in video details
         videoId: details.id,
     }))
+
+    cachedVideos = { videos, timestamp: Date.now() }
+
     return json({ videos })
 }
 
@@ -56,8 +67,7 @@ export default function GeneratePage() {
     )
 }
 
-
-export  function Generate() {
+export function Generate() {
     const loaderData = useLoaderData() as { videos: VideoItem[] }
     const [searchParams] = useSearchParams()
     const [videos, setVideos] = useState<VideoItem[]>(
@@ -72,7 +82,6 @@ export  function Generate() {
     useEffect(() => {
         console.log('Starting video generation...')
         if (testMode) {
-            // setVideos(testVideos)
             return
         }
         const pdfText = localStorage.getItem('pdfText') || ''
@@ -96,7 +105,9 @@ export  function Generate() {
 
                 for await (const data of generator.data) {
                     console.log('Generated videos:', data)
-                    setVideos([...data.videos, ...testVideos].sort(sortVideosByDate))
+                    setVideos(
+                        [...data.videos, ...testVideos].sort(sortVideosByDate),
+                    )
                 }
             } catch (error) {
                 console.log('Error generating videos:', error)
@@ -107,107 +118,131 @@ export  function Generate() {
     }, [])
     return (
         <div className='p-4'>
-            <Masonry columns={{ 640: 1, 768: 2, 1024: 3 }} gap={24}>
+            <Masonry columns={{ 640: 3, 768: 2, 1024: 3 }}  gap={24}>
                 <IntroBox />
                 {videos.length === 0
                     ? // Show initial message card
-
                       [...Array(6)].map((_, i) => <VideoSkeleton key={i} />)
                     : // Show actual videos
-                      videos.map((video, i) => (
-                          <div
-                              key={i}
-                              className='relative aspect-[9/16] rounded-xl overflow-hidden'
-                          >
-                              {video.url ? (
-                                  <>
-                                      <video
-                                          src={video.url}
-                                          controls
-                                          className='absolute inset-0 w-full h-full object-cover'
-                                          onPlay={() =>
-                                              setPlayingVideos((prev) => ({
-                                                  ...prev,
-                                                  [i]: true,
-                                              }))
-                                          }
-                                          onPause={() =>
-                                              setPlayingVideos((prev) => ({
-                                                  ...prev,
-                                                  [i]: false,
-                                              }))
-                                          }
-                                          onEnded={() =>
-                                              setPlayingVideos((prev) => ({
-                                                  ...prev,
-                                                  [i]: false,
-                                              }))
-                                          }
-                                      />
-                                      {!playingVideos[i] && <PlayButton />}
-                                  </>
-                              ) : (
-                                  <VideoSkeleton>
-                                      Processing video...
-                                  </VideoSkeleton>
-                              )}
-
-                              <div
-                                  className={`absolute pointer-events-none bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-xl p-4 space-y-3 shadow-lg transition-opacity duration-300 ${playingVideos[i] ? 'opacity-0' : 'opacity-100'}`}
-                              >
-                                  <h3 className='font-medium truncate'>
-                                      {video.title}
-                                  </h3>
-
-                                  {video.status && (
-                                      <p className='text-sm text-gray-500'>
-                                          Status:{' '}
-                                          {video.status || 'Processing...'}
-                                      </p>
-                                  )}
-
-                                  {video.keywords &&
-                                      video.keywords.length > 0 && (
-                                          <div className='flex flex-wrap gap-2'>
-                                              {video.keywords.map(
-                                                  (keyword, j) => {
-                                                      const colors = [
-                                                          'bg-blue-100 text-blue-800',
-                                                          'bg-green-100 text-green-800',
-                                                          'bg-purple-100 text-purple-800',
-                                                          'bg-yellow-100 text-yellow-800',
-                                                          'bg-pink-100 text-pink-800',
-                                                      ]
-                                                      const colorIndex =
-                                                          keyword.length %
-                                                          colors.length
-                                                      return (
-                                                          <span
-                                                              key={j}
-                                                              className={`text-xs px-2 py-1 rounded-full ${colors[colorIndex]}`}
-                                                          >
-                                                              {keyword}
-                                                          </span>
+                      videos
+                          .reduce<(VideoItem | null)[]>((acc, video, index) => {
+                              if (index === 1) {
+                                  acc.push(null)
+                              }
+                              acc.push(video)
+                              return acc
+                          }, [])
+                          .map((video, i) => {
+                              if (video === null) {
+                                  return (
+                                      <ProgressBox key={`progress-box-${i}`} />
+                                  )
+                              }
+                              return (
+                                  <div
+                                      key={i}
+                                      className='relative aspect-[9/16] rounded-xl overflow-hidden'
+                                  >
+                                      {video.url ? (
+                                          <>
+                                              <video
+                                                  src={video.url}
+                                                  controls
+                                                  className='absolute inset-0 w-full h-full object-cover'
+                                                  onPlay={() =>
+                                                      setPlayingVideos(
+                                                          (prev) => ({
+                                                              ...prev,
+                                                              [i]: true,
+                                                          }),
                                                       )
-                                                  },
+                                                  }
+                                                  onPause={() =>
+                                                      setPlayingVideos(
+                                                          (prev) => ({
+                                                              ...prev,
+                                                              [i]: false,
+                                                          }),
+                                                      )
+                                                  }
+                                                  onEnded={() =>
+                                                      setPlayingVideos(
+                                                          (prev) => ({
+                                                              ...prev,
+                                                              [i]: false,
+                                                          }),
+                                                      )
+                                                  }
+                                              />
+                                              {!playingVideos[i] && (
+                                                  <PlayButton />
                                               )}
-                                          </div>
+                                          </>
+                                      ) : (
+                                          <VideoSkeleton>
+                                              Processing video...
+                                          </VideoSkeleton>
                                       )}
 
-                                  {video.url && (
-                                      <a
-                                          href={video.url}
-                                          download
-                                          className='pointer-events-auto block w-full text-center bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors'
-                                          onClick={(e) => e.stopPropagation()}
+                                      <div
+                                          className={`absolute pointer-events-none bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-xl p-4 space-y-3 shadow-lg transition-opacity duration-300 ${playingVideos[i] ? 'opacity-0' : 'opacity-100'}`}
                                       >
-                                          Download Video
-                                      </a>
-                                  )}
-                              </div>
-                          </div>
-                      ))}
-                {/* <LoadingBox /> */}
+                                          <h3 className='font-medium truncate'>
+                                              {video.title}
+                                          </h3>
+
+                                          {video.status && (
+                                              <p className='text-sm text-gray-500'>
+                                                  Status:{' '}
+                                                  {video.status ||
+                                                      'Processing...'}
+                                              </p>
+                                          )}
+
+                                          {video.keywords &&
+                                              video.keywords.length > 0 && (
+                                                  <div className='flex flex-wrap gap-2'>
+                                                      {video.keywords.map(
+                                                          (keyword, j) => {
+                                                              const colors = [
+                                                                  'bg-blue-100 text-blue-800',
+                                                                  'bg-green-100 text-green-800',
+                                                                  'bg-purple-100 text-purple-800',
+                                                                  'bg-yellow-100 text-yellow-800',
+                                                                  'bg-pink-100 text-pink-800',
+                                                              ]
+                                                              const colorIndex =
+                                                                  keyword.length %
+                                                                  colors.length
+                                                              return (
+                                                                  <span
+                                                                      key={j}
+                                                                      className={`text-xs px-2 py-1 rounded-full ${colors[colorIndex]}`}
+                                                                  >
+                                                                      {keyword}
+                                                                  </span>
+                                                              )
+                                                          },
+                                                      )}
+                                                  </div>
+                                              )}
+
+                                          {video.url && (
+                                              <a
+                                                  href={video.url}
+                                                  download
+                                                  className='pointer-events-auto block w-full text-center bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors'
+                                                  onClick={(e) =>
+                                                      e.stopPropagation()
+                                                  }
+                                              >
+                                                  Download Video
+                                              </a>
+                                          )}
+                                      </div>
+                                  </div>
+                              )
+                          })}
                 {[...Array(6)].map((_, i) => (
                     <VideoSkeleton key={i} />
                 ))}
@@ -287,7 +322,7 @@ export const testVideos: VideoItem[] = [
             'mobility',
             'city',
             'downtown',
-            'metropolis', 
+            'metropolis',
             'traffic',
             'congestion',
             'commute',
