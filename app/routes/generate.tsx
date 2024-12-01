@@ -114,48 +114,57 @@ export default function Generate() {
                                   </VideoSkeleton>
                               )}
 
-                              {!playingVideos[i] && (
-                                  <div className='absolute pointer-events-none bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-xl p-4 space-y-3 shadow-lg'>
-                                      <h3 className='font-medium truncate'>
-                                          {video.title}
-                                      </h3>
+                              <div className={`absolute pointer-events-none bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-xl p-4 space-y-3 shadow-lg transition-opacity duration-300 ${playingVideos[i] ? 'opacity-0' : 'opacity-100'}`}>
+                                  <h3 className='font-medium truncate'>
+                                      {video.title}
+                                  </h3>
 
-                                      {video.status && (
-                                          <p className='text-sm text-gray-500'>
-                                              Status:{' '}
-                                              {video.status || 'Processing...'}
-                                          </p>
+                                  {video.status && (
+                                      <p className='text-sm text-gray-500'>
+                                          Status:{' '}
+                                          {video.status || 'Processing...'}
+                                      </p>
+                                  )}
+
+                                  {video.keywords &&
+                                      video.keywords.length > 0 && (
+                                          <div className='flex flex-wrap gap-2'>
+                                              {video.keywords.map(
+                                                  (keyword, j) => {
+                                                      const colors = [
+                                                          'bg-blue-100 text-blue-800',
+                                                          'bg-green-100 text-green-800',
+                                                          'bg-purple-100 text-purple-800',
+                                                          'bg-yellow-100 text-yellow-800',
+                                                          'bg-pink-100 text-pink-800',
+                                                      ]
+                                                      const colorIndex =
+                                                          keyword.length %
+                                                          colors.length
+                                                      return (
+                                                          <span
+                                                              key={j}
+                                                              className={`text-xs px-2 py-1 rounded-full ${colors[colorIndex]}`}
+                                                          >
+                                                              {keyword}
+                                                          </span>
+                                                      )
+                                                  },
+                                              )}
+                                          </div>
                                       )}
 
-                                      {video.keywords &&
-                                          video.keywords.length > 0 && (
-                                              <div className='flex flex-wrap gap-2'>
-                                                  {video.keywords.map(
-                                                      (keyword, j) => {
-                                                          const colors = [
-                                                              'bg-blue-100 text-blue-800',
-                                                              'bg-green-100 text-green-800',
-                                                              'bg-purple-100 text-purple-800',
-                                                              'bg-yellow-100 text-yellow-800',
-                                                              'bg-pink-100 text-pink-800',
-                                                          ]
-                                                          const colorIndex =
-                                                              keyword.length %
-                                                              colors.length
-                                                          return (
-                                                              <span
-                                                                  key={j}
-                                                                  className={`text-xs px-2 py-1 rounded-full ${colors[colorIndex]}`}
-                                                              >
-                                                                  {keyword}
-                                                              </span>
-                                                          )
-                                                      },
-                                                  )}
-                                              </div>
-                                          )}
-                                  </div>
-                              )}
+                                  {video.url && (
+                                      <a
+                                          href={video.url}
+                                          download
+                                          className='pointer-events-auto block w-full text-center bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors'
+                                          onClick={(e) => e.stopPropagation()}
+                                      >
+                                          Download Video
+                                      </a>
+                                  )}
+                              </div>
                           </div>
                       ))}
                 <div className='relative rounded-xl overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 p-8 min-h-[400px] flex flex-col items-center justify-center text-center'>
