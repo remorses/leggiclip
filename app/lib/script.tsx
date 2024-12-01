@@ -4,7 +4,7 @@ import { extractTagsArrays } from '~/lib/xml'
 
 const openai = createOpenAI({
     apiKey: process.env.AIML_API_KEY,
-    baseURL: 'https://api.aimlapi.com/'
+    baseURL: 'https://api.aimlapi.com/v1'
 })
 
 export async function* generateTikTokScripts({
