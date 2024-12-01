@@ -39,11 +39,17 @@ export default function Home() {
     const actionData = useActionData()
 
     return (
-        <div className='min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8'>
-            <div className='text-center'>
+        <div className='min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8'>
+            <div className='text-center -mt-[20%]'>
                 <h1 className='text-3xl font-bold text-gray-900 mb-8'>
                     Generate AI Videos
                 </h1>
+                <div className='max-w-xl mx-auto text-center'>
+                    <p className='text-lg text-gray-500 mb-8'>
+                        Transform complex content into engaging videos. Our AI breaks down
+                        lengthy material into digestible, shareable content.
+                    </p>
+                </div>
             </div>
 
             <Form
@@ -83,7 +89,7 @@ export default function Home() {
                                 required
                                 defaultValue={actionData?.description}
                             />
-                            
+
                             <div className='absolute bottom-3 left-3'>
                                 <input
                                     type='file'
